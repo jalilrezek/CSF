@@ -119,7 +119,7 @@ std::vector<uint64_t> BigInt::addMagnitudes(const BigInt& rhs) const {
     return sumVec;
 }
 
-int BigInt::leftHasGreaterMagnitude(const BigInt& rhs) const {
+int BigInt::thisBigIntHasGreaterMagnitudeThanOther(const BigInt& rhs) const {
 
   auto leftSize = this->value.size();
   auto rightSize = rhs.value.size();
@@ -144,22 +144,20 @@ int BigInt::leftHasGreaterMagnitude(const BigInt& rhs) const {
 
 }
 
-std::vector<uint64_t> BigInt::subtractMagnitudes(const BigInt& rhs) const {
+std::vector<uint64_t> BigInt::subtractMagnitudes(const BigInt& rhs, int thisBigIntIsBiggerThanOther) const {
     std::vector<uint64_t> diffVec;
 
-    int leftIsBigger = leftHasGreaterMagnitude(rhs);
-
-    auto largerSize = leftIsBigger == 1 ? this->value.size() : rhs.value.size();
+    auto largerSize = thisBigIntIsBiggerThanOther == 1 ? this->value.size() : rhs.value.size();
     // if lhs ("this") has greater sized bit string, largerSize is size of lhs's bit string.
 
     auto smallerSize = largerSize == this->value.size() ? rhs.value.size() : this->value.size();
     // if largerSize is of lhs ("this"), smallerSize is size of rhs's bit string, else it's of lhs's bit string.
 
-    std::vector<uint64_t> largerMag = leftIsBigger == 1 ? value : rhs.value;
+    std::vector<uint64_t> largerMag = thisBigIntIsBiggerThanOther == 1 ? value : rhs.value;
     // for subtraction, the algorithm gets weird if have larger magnitude number on the bottom (as subtrahend) 
     // so identifying largest mag and subtracting smaller from it (not vice versa) is important.
 
-    std::vector<uint64_t> smallerMag = leftIsBigger == 1 ? rhs.value : value; // equal or right bigger is same result
+    std::vector<uint64_t> smallerMag = thisBigIntIsBiggerThanOther == 1 ? rhs.value : value; // equal or right bigger is same result
     // i.e. smallerMag is the size of right
 
     // below code's purpose is to add 0s if necessary to the one with fewer digits to simplify the addition.
@@ -206,31 +204,34 @@ BigInt BigInt::operator+(const BigInt &rhs) const
   } else if (isNegative && !otherNegative) {
     std::cout<<"lhs negative and rhs positive";
 
-    int leftIsBigger = leftHasGreaterMagnitude(rhs);
+    int thisBigIntIsBiggerThanOther = thisBigIntHasGreaterMagnitudeThanOther(rhs);
 
-    if (leftIsBigger == 1) { // "this" has greater magnitude, and "this" neg while "rhs" pos. val - rhs.val
+    if (thisBigIntIsBiggerThanOther == 1) { // "this" has greater magnitude, and "this" neg while "rhs" pos. val - rhs.val
       std::cout<<"left has greater magnitude";
-      return BigInt(subtractMagnitudes(rhs), true); // result will be negative
-    } else if (leftIsBigger == -1) { // "rhs" has greater magnitude, and "rhs" pos while "this" neg. rhs.val - val
+      return BigInt(subtractMagnitudes(rhs, thisBigIntIsBiggerThanOther), true); // result will be negative
+    } else if (thisBigIntIsBiggerThanOther == -1) { // "rhs" has greater magnitude, and "rhs" pos while "this" neg. rhs.val - val
       std::cout<<"right has greater magnitude";
-      return BigInt(rhs.subtractMagnitudes(*this), false); // positive result.
-    } else { // leftIsBigger == 0 that is the magnitudes are equal and they are oppositely signed.
+      int otherIsBiggerThanThis = 1; // gonna call rhs.subtractMagnitudes. From perspective of rhs, rhs is the "left" and
+      // "this" is the right. So the argument for rhs's function should be 1, not -1.
+      return BigInt(rhs.subtractMagnitudes(*this, otherIsBiggerThanThis), false); // positive result.
+    } else { // thisBigIntIsBiggerThanOther == 0 that is the magnitudes are equal and they are oppositely signed.
       std::cout<<"Left and right have equal magnitudes";
       return BigInt(0); 
     }
 
   } else { // !isNegative && otherNegative
     std::cout<<"lhs positive and rhs negative";
-    int leftIsBigger = leftHasGreaterMagnitude(rhs);
+    int thisBigIntIsBiggerThanOther = thisBigIntHasGreaterMagnitudeThanOther(rhs);
 
-    if (leftIsBigger == 1) { // "this" has greater magnitude, and "this" pos while "rhs" neg. val - rhs.val
+    if (thisBigIntIsBiggerThanOther == 1) { // "this" has greater magnitude, and "this" pos while "rhs" neg. val - rhs.val
       std::cout<<"left has greater magnitude";
-      return BigInt(subtractMagnitudes(rhs), false); // result will be positive
-    } else if (leftIsBigger == -1) { // "rhs" has greater magnitude, and "rhs" neg while "this" pos. rhs.val - val
+      return BigInt(subtractMagnitudes(rhs, thisBigIntIsBiggerThanOther), false); // result will be positive
+    } else if (thisBigIntIsBiggerThanOther == -1) { // "rhs" has greater magnitude, and "rhs" neg while "this" pos. rhs.val - val
       std::cout<<"right has greater magnitude";
-      return BigInt(rhs.subtractMagnitudes(*this), true); // negative result.
-    } else { // leftIsBigger == 0 that is the magnitudes are equal and they are oppositely signed.
-      std::cout<<"leftIsBigger == 0 that is the magnitudes are equal";
+      int otherIsBiggerThanThis = 1; // from perspective of rhs, "this" is bigger than other.
+      return BigInt(rhs.subtractMagnitudes(*this, otherIsBiggerThanThis), true); // negative result.
+    } else { // thisBigIntIsBiggerThanOther == 0 that is the magnitudes are equal and they are oppositely signed.
+      std::cout<<"thisBigIntIsBiggerThanOther == 0 that is the magnitudes are equal";
       return BigInt(0); 
     }
   

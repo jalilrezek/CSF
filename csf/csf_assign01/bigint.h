@@ -90,11 +90,11 @@ public:
   //!         containing the bit string)
   uint64_t get_bits(unsigned index) const;
 
-int leftHasGreaterMagnitude(const BigInt& rhs) const;
+int thisBigIntHasGreaterMagnitudeThanOther(const BigInt& rhs) const;
 
 std::vector<uint64_t> addMagnitudes(const BigInt& rhs) const;
 
-std::vector<uint64_t> subtractMagnitudes(const BigInt& rhs) const;
+std::vector<uint64_t> subtractMagnitudes(const BigInt& rhs, int thisBigIntIsBiggerThanOther) const;
 
   //! Addition operator.
   //!
