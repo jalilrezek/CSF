@@ -94,7 +94,7 @@ int thisGreaterMagThanOther(const BigInt& rhs) const;
 
 std::vector<uint64_t> addMagnitudes(const BigInt& rhs) const;
 
-std::vector<uint64_t> subtractMagnitudes(const BigInt& rhs, int thisBiggerThanOther) const;
+std::vector<uint64_t> subtractMagnitudes(const BigInt& rhs) const;
 
   //! Addition operator.
   //!

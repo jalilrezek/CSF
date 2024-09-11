@@ -64,6 +64,10 @@ void test_to_dec_2(TestObjs *objs);
 void testAssignment(TestObjs *objs);
 void testUnaryMinusAndIsNegative(TestObjs *objs);
 void testGetBitVector(TestObjs *objs);
+void testSubtractMagnitudes1(TestObjs* objs);
+void testSubtractMagnitudes2(TestObjs* objs);
+void testSubtractMagnitudes3(TestObjs* objs);
+void testSubtractMagnitudes4(TestObjs* objs);
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -78,9 +82,9 @@ int main(int argc, char **argv) {
   //TEST(test_copy_ctor);
   //TEST(test_get_bits);
   //TEST(test_add_1);
- // TEST(test_add_2);
+  //TEST(test_add_2);
   //TEST(test_add_3);
-  TEST(test_add_4);
+  //TEST(test_add_4);
   /*TEST(test_sub_1);
   TEST(test_sub_2);
   TEST(test_sub_3);
@@ -103,6 +107,10 @@ int main(int argc, char **argv) {
  // TEST(testAssignment);
   //TEST(testUnaryMinusAndIsNegative);
   //TEST(testGetBitVector);
+  //TEST(testSubtractMagnitudes1);
+  //TEST(testSubtractMagnitudes2);
+  TEST(testSubtractMagnitudes3);
+  TEST(testSubtractMagnitudes4);
 
   TEST_FINI();
 }
@@ -618,4 +626,66 @@ void testGetBitVector(TestObjs *objs) {
 
   ASSERT(val1.get_bit_vector() == val2.get_bit_vector());
 
+}
+
+void testSubtractMagnitudes1(TestObjs *objs) {
+  BigInt left({0x1000UL});
+  BigInt right({0x0fffUL}, true);
+  BigInt result = left + right;
+  std::cout<<result.to_hex()<<std::endl;
+
+  BigInt left2({0x999UL});
+  BigInt right2({0x724UL}, true);
+  BigInt result2 = left2 + right2;
+  std::cout<<result2.to_hex()<<std::endl;
+  check_contents(result2, {0x275});
+
+  BigInt left3({0x13UL});
+  BigInt right3({0x7UL}, true);
+  BigInt result3 = left3 + right3;
+  std::cout<<result3.to_hex()<<std::endl;
+  check_contents(result3, {0xcUL});
+
+  BigInt left4({0x909UL});
+  BigInt right4({0x272UL}, true);
+  BigInt result4 = left4 + right4;
+  std::cout<<result4.to_hex()<<std::endl;
+  check_contents(result4, {0x697UL});
+
+}
+
+void testSubtractMagnitudes2(TestObjs * objs) { // really big but still just one uint64
+  BigInt left(0x120450cdf984003eUL);
+  BigInt right(0xfde98230605ab04UL, true);
+  BigInt result = left + right;
+  std::cout<<result.to_hex()<<std::endl;
+  check_contents(result, {0x225B8AAF37E553AUL});
+}
+
+void testSubtractMagnitudes3(TestObjs *objs) { // now so big that more than one uint64 is used.
+  BigInt left({0x0000000000000000UL, 0x1UL});
+  BigInt right({0xffffffffffffffffUL}, true);
+
+  BigInt result = left + right;
+
+  std::cout<<result.to_hex()<<std::endl; 
+
+  // to_hex() prints from biggest (left) to smallest (right). 
+  // The vectors list smallest (left) to biggest (right). check_contents and to_hex() in conjunction confirm this.
+
+  check_contents(result, {0x0UL, 0xfffffffffffffffeUL}); // this helped me understand
+  // how to_hex works somehow. Maybe.
+  // note - the actual contents should not be this! Should be just 1. I just wanted to see how to_hex() works.
+
+}
+
+void testSubtractMagnitudes4(TestObjs* objs) {
+  BigInt left({0x0000000000000000UL, 0x1UL});
+  BigInt right({0x1UL}, true);
+
+  BigInt result = left + right;
+
+  std::cout<<result.to_hex()<<std::endl;
+
+  check_contents(result, {0xffffffffffffffffUL, 0x0UL});
 }
