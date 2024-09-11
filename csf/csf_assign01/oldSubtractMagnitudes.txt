@@ -1,0 +1,30 @@
+std::vector<uint64_t> BigInt::subtractMagnitudes(std::vector<uint64_t>& rhs) {
+    std::vector<uint64_t> diffVec;
+
+    std::vector<uint64_t> largerMag = value > rhs ? value : rhs;
+    std::vector<uint64_t> smallerMag = value < rhs ? value : rhs;
+
+    auto largerSize = largerMag.size();
+    auto smallerSize = smallerMag.size();
+
+    // below code's purpose is to add 0s if necessary to the one with fewer digits to simplify the addition.
+    for (int i = smallerSize; i < largerSize; i++) {
+      smallerMag.push_back(0);
+    }
+
+    uint64_t toBorrow = 0; // equivalent of "overflow" from addition; what is borrowed from next column if 
+    // subtract larger from smaller in prev column.
+
+    for (int i = 0; i < largerSize; i++) { 
+      uint64_t diff = largerMag[i] - (smallerMag[i] + toBorrow);
+      if (diff > largerMag[i]) { // uint64_t overflows to remain in the positives, so this is how to check for overflow
+        toBorrow = 1;
+        diffVec.push_back(UINT64_MAX - ((smallerMag[i] + toBorrow) - largerMag[i]); // ex. 3 - 7 in ones place
+        // gives 6 in that place when doing grade school algorithm for subtraction. So do 7 - 3 = 4, then 10 - 4 = 6
+      } else {
+        diffVec.push_back(diff);
+      }
+    }
+
+    return diffVec;
+}
