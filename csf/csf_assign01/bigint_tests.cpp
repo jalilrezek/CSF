@@ -107,10 +107,10 @@ int main(int argc, char **argv) {
  // TEST(testAssignment);
   //TEST(testUnaryMinusAndIsNegative);
   //TEST(testGetBitVector);
-  //TEST(testSubtractMagnitudes1);
-  //TEST(testSubtractMagnitudes2);
-  //TEST(testSubtractMagnitudes3);
- // TEST(testSubtractMagnitudes4);
+  TEST(testSubtractMagnitudes1);
+  TEST(testSubtractMagnitudes2);
+  TEST(testSubtractMagnitudes3);
+  TEST(testSubtractMagnitudes4);
 
   TEST_FINI();
 }
@@ -296,7 +296,7 @@ void test_add_4(TestObjs *) {
     BigInt left({0x9f33ca9e0290d102UL, 0xd331662e19562498UL, 0x2347e72885d6e83UL, 0x529bac52c46b047UL, 0x69b3f801ea78f778UL, 0xfdba8845fc024708UL, 0x2UL});
     BigInt right({0x3efacbd8f95c7bbUL, 0x974f58eddfc56dfeUL, 0xa844e13b7c33ebedUL, 0xb4dd001fbdf5f260UL, 0x755c8aee33f48fecUL, 0x60UL}, true);
     BigInt result = left + right;
-    std::cout<<"My result: "<<result.to_hex()<<std::endl;
+    //std::cout<<"My result: "<<result.to_hex()<<std::endl;
     check_contents(result, {0x9b441de072fb0947UL, 0x3be20d403990b69aUL, 0x59ef9d370c298296UL, 0x504cbaa56e50bde6UL, 0xf4576d13b684678bUL, 0xfdba8845fc0246a7UL, 0x2UL});
     ASSERT(!result.is_negative());
   }
@@ -673,9 +673,8 @@ void testSubtractMagnitudes3(TestObjs *objs) { // now so big that more than one 
   // to_hex() prints from biggest (left) to smallest (right). 
   // The vectors list smallest (left) to biggest (right). check_contents and to_hex() in conjunction confirm this.
 
-  check_contents(result, {0x0UL, 0xfffffffffffffffeUL}); // this helped me understand
+  check_contents(result, {0x1UL}); // this helped me understand
   // how to_hex works somehow. Maybe.
-  // note - the actual contents should not be this! Should be just 1. I just wanted to see how to_hex() works.
 
 }
 
