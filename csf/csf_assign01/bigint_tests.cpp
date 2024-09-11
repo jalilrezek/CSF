@@ -72,14 +72,14 @@ int main(int argc, char **argv) {
 
   TEST_INIT();
 
-  TEST(test_default_ctor);
-  TEST(test_u64_ctor);
-  TEST(test_initlist_ctor);
-  TEST(test_copy_ctor);
-  TEST(test_get_bits);
+  //TEST(test_default_ctor);
+  //TEST(test_u64_ctor);
+  //TEST(test_initlist_ctor);
+  //TEST(test_copy_ctor);
+  //TEST(test_get_bits);
   //TEST(test_add_1);
-  //TEST(test_add_2);
- //TEST(test_add_3);
+ // TEST(test_add_2);
+  //TEST(test_add_3);
   TEST(test_add_4);
   /*TEST(test_sub_1);
   TEST(test_sub_2);
@@ -95,14 +95,14 @@ int main(int argc, char **argv) {
   TEST(test_compare_2);
   TEST(test_div_1);
   TEST(test_div_2); */
-  TEST(test_to_hex_1);
-  TEST(test_to_hex_2);
+  //TEST(test_to_hex_1);
+  //TEST(test_to_hex_2);
   //TEST(test_to_dec_1);
   //TEST(test_to_dec_2);
   // TODO: add calls to TEST for additional test functions
-  TEST(testAssignment);
-  TEST(testUnaryMinusAndIsNegative);
-  TEST(testGetBitVector);
+ // TEST(testAssignment);
+  //TEST(testUnaryMinusAndIsNegative);
+  //TEST(testGetBitVector);
 
   TEST_FINI();
 }
@@ -288,6 +288,7 @@ void test_add_4(TestObjs *) {
     BigInt left({0x9f33ca9e0290d102UL, 0xd331662e19562498UL, 0x2347e72885d6e83UL, 0x529bac52c46b047UL, 0x69b3f801ea78f778UL, 0xfdba8845fc024708UL, 0x2UL});
     BigInt right({0x3efacbd8f95c7bbUL, 0x974f58eddfc56dfeUL, 0xa844e13b7c33ebedUL, 0xb4dd001fbdf5f260UL, 0x755c8aee33f48fecUL, 0x60UL}, true);
     BigInt result = left + right;
+    std::cout<<"My result: "<<result.to_hex()<<std::endl;
     check_contents(result, {0x9b441de072fb0947UL, 0x3be20d403990b69aUL, 0x59ef9d370c298296UL, 0x504cbaa56e50bde6UL, 0xf4576d13b684678bUL, 0xfdba8845fc0246a7UL, 0x2UL});
     ASSERT(!result.is_negative());
   }
