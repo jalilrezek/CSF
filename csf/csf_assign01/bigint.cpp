@@ -145,37 +145,34 @@ int BigInt::thisGreaterMagThanOther(const BigInt& rhs) const {
 }
 
 std::vector<uint64_t> BigInt::subtractMagnitudes(const BigInt& rhs) const {
-  // you only ever subtract a smaller magnitude from a larger one.
     std::vector<uint64_t> diffVec;
-    auto largerSize = this->value.size();
-    auto smallerSize = rhs.value.size();
-
     auto largerMag = value;
     auto smallerMag = rhs.value;
 
-    // below code's purpose is to add 0s if necessary to the one with fewer digits to simplify the addition.
-    for (int i = smallerSize; i < largerSize; i++) {
-      smallerMag.push_back(0);
+    // Ensure both vectors are the same size
+    while (smallerMag.size() < largerMag.size()) {
+        smallerMag.push_back(0);
     }
 
-    for (int i = 0; i < largerSize; i++) {
-      uint64_t diff = largerMag[i] - smallerMag[i];
-      if (diff > largerMag[i]) {
-        int j = i + 1;
-        while (largerMag[j] != 0) {
-          largerMag[j] = UINT64_MAX - 1;
-          j++;
+    bool borrow = false;
+    for (size_t i = 0; i < largerMag.size(); ++i) {
+        uint64_t diff = largerMag[i] - smallerMag[i] - (borrow ? 1 : 0);
+        if (largerMag[i] < smallerMag[i] + (borrow ? 1 : 0)) {
+            diff = UINT64_MAX - (smallerMag[i] + (borrow ? 1 : 0) - largerMag[i]) + 1;
+            borrow = true;
+        } else {
+            borrow = false;
         }
-        largerMag[j]--;
-        diffVec.push_back(UINT64_MAX - ((smallerMag[i] - largerMag[i]))); // ex. 3 - 7 in ones place
-        // borrow 1 to make 3 into 13, then 13 - 7 = 6, same thing as 10 - (7-3) = 10-4 = 6
-      } else {
-        diffVec.push_back(largerMag[i] - smallerMag[i]);
-      }
-
+        diffVec.push_back(diff);
     }
+    // Remove leading zeros
+    while (diffVec.size() > 1 && diffVec.back() == 0) {
+        diffVec.pop_back();
+    }
+
     return diffVec;
 }
+
 
 
 BigInt BigInt::operator+(const BigInt &rhs) const
