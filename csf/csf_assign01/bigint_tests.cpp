@@ -70,6 +70,7 @@ void testSubtractMagnitudes3(TestObjs* objs);
 void testSubtractMagnitudes4(TestObjs* objs);
 void testSubMagnitudes5(TestObjs* objs);
 void testSubMag6(TestObjs* objs);
+void testAddMag1(TestObjs* objs);
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -115,6 +116,7 @@ int main(int argc, char **argv) {
   TEST(testSubtractMagnitudes4);
   TEST(testSubMagnitudes5);
   TEST(testSubMag6);
+  TEST(testAddMag1);
 
   TEST_FINI();
 }
@@ -722,8 +724,23 @@ void testSubMag6(TestObjs * objs) {
 
   BigInt result = left - right;
 
+  std::cout<<result.to_hex()<<std::endl;
+
   check_contents(result, {0x909741d555ad2b9, 0xafb780be2d51a0, 0x3fe96acf9bb1149, 0xd424});
 
   ASSERT(!result.is_negative());
 
+}
+
+void testAddMag1(TestObjs* objs) {
+  BigInt left({0xe3a0666649c8bd4, 0x31f6b3a27229605, 0xfe96acf9bb11833, 0xd4243});
+  BigInt right({0x53092490f41b91b, 0x823f32e444d7bfc, 0x395});
+
+  BigInt result = left + right;
+
+  std::cout<<result.to_hex()<<std::endl;
+
+  check_contents(result, {0x36a98af73de44ef, 0xb435e686b701202, 0xfe96acf9bb11bc8, 0xd4243});
+
+  ASSERT(!result.is_negative());
 }
