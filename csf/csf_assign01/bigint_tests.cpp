@@ -68,6 +68,8 @@ void testSubtractMagnitudes1(TestObjs* objs);
 void testSubtractMagnitudes2(TestObjs* objs);
 void testSubtractMagnitudes3(TestObjs* objs);
 void testSubtractMagnitudes4(TestObjs* objs);
+void testSubMagnitudes5(TestObjs* objs);
+void testSubMag6(TestObjs* objs);
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -111,6 +113,8 @@ int main(int argc, char **argv) {
   TEST(testSubtractMagnitudes2);
   TEST(testSubtractMagnitudes3);
   TEST(testSubtractMagnitudes4);
+  TEST(testSubMagnitudes5);
+  TEST(testSubMag6);
 
   TEST_FINI();
 }
@@ -687,4 +691,39 @@ void testSubtractMagnitudes4(TestObjs* objs) {
   std::cout<<result.to_hex()<<std::endl;
 
   check_contents(result, {0xffffffffffffffffUL, 0x0UL});
+}
+
+void testSubMagnitudes5(TestObjs* objs) {
+  {
+  BigInt left(
+      {0x94e439a254295b2fUL, 0xc02d6dc0be0efef4UL, 0xe5156c9d912b61f2UL,
+       0xb82729123ce1051eUL, 0x1d2c69a0ed4011c3UL, 0xf13f35779fd54911UL,
+       0x15056f71d40516eaUL, 0xdb571f43f9416bdeUL, 0x7e21086e7df7095UL,
+       0x797275a8e7538b0aUL, 0x18a6284e20e7893aUL});
+  BigInt right(
+      {0x9161ea05eb48510dUL, 0xb7a476402ef52acaUL, 0xdf96be7a926695adUL,
+       0x53e8bc19a9c14029UL, 0xf87ee595e422d5f0UL, 0x72dd209be1d990cbUL,
+       0xb991581205507625UL, 0x77bbceb930f0c50eUL, 0x862b240a5ee05327UL,
+       0x44af5ae70f9c63b6UL, 0x30UL}, true);
+  BigInt result = left - right;
+  check_contents(result, {0x264623a83f71ac3cUL, 0x77d1e400ed0429bfUL,
+                          0xc4ac2b182391f7a0UL, 0xc0fe52be6a24548UL,
+                          0x15ab4f36d162e7b4UL, 0x641c561381aed9ddUL,
+                          0xce96c783d9558d10UL, 0x5312edfd2a3230ecUL,
+                          0x8e0d349146bfc3bdUL, 0xbe21d08ff6efeec0UL,
+                          0x18a6284e20e7896aUL});
+  ASSERT(!result.is_negative());
+  }
+}
+
+void testSubMag6(TestObjs * objs) {
+  BigInt left({0xe3a0666649c8bd4, 0x31f6b3a27229605, 0xfe96acf9bb11833, 0xd4243});
+  BigInt right({0x53092490f41b91b, 0x823f32e444d7bfc, 0x395}, true);
+
+  BigInt result = left - right;
+
+  check_contents(result, {0x909741d555ad2b9, 0xafb780be2d51a0, 0x3fe96acf9bb1149, 0xd424});
+
+  ASSERT(!result.is_negative());
+
 }
