@@ -76,7 +76,7 @@ uint64_t BigInt::get_bits(unsigned index) const
   }
 }
 
-
+/*
 std::vector<uint64_t> BigInt::addMagnitudes(const BigInt& rhs) const {
 
     std::vector<uint64_t> lhsVal = value; // in case need to push back 0 as seen below.
@@ -117,6 +117,40 @@ std::vector<uint64_t> BigInt::addMagnitudes(const BigInt& rhs) const {
 
 
     return sumVec;
+}
+*/
+
+BigInt BigInt::add_magnitude(const BigInt &lhs, const BigInt &rhs) const {
+    BigInt result;
+    result.isNegative = false; // This function only handles magnitudes, so result is non-negative
+
+    size_t max_size = std::max(lhs.value.size(), rhs.value.size());
+    result.value.resize(max_size, 0);
+
+    uint64_t carry = 0;
+    for (size_t i = 0; i < max_size; ++i) {
+        uint64_t lhs_value = (i < lhs.value.size()) ? lhs.value[i] : 0;
+        uint64_t rhs_value = (i < rhs.value.size()) ? rhs.value[i] : 0;
+
+        // Sum the values and add carry from the previous iteration
+        uint64_t total = lhs_value + rhs_value + carry;
+
+        // Check for overflow and set carry
+        if (total < lhs_value || total < rhs_value) {
+            carry = 1;
+        } else {
+            carry = 0;
+        }
+
+        result.value[i] = total;
+    }
+
+    // If there is a remaining carry, append it to the result
+    if (carry > 0) {
+        result.value.push_back(carry);
+    }
+
+    return result;
 }
 
 int BigInt::thisGreaterMagThanOther(const BigInt& rhs) const {
@@ -261,26 +295,135 @@ BigInt BigInt::operator-() const
 bool BigInt::is_bit_set(unsigned n) const
 {
   // TODO: implement
+  // find which 64-bit chunk the bit belongs to
+  unsigned chunk_pos = n / 64;
+  if (chunk_pos >= value.size()) {
+    // this means that the bit is not set
+    return false;
+  }
+
+  // find bit position inside the chunk
+  unsigned bit_pos = n % 64;
+
+  // check if the bit is set at the correct index
+  return (value[chunk_pos] & (1ULL << bit_pos)) != 0;
 }
 
 BigInt BigInt::operator<<(unsigned n) const
 {
   // TODO: implement
+  BigInt final_result = *this;
+  
+  // find out how many full 64-bit chunks we would have to shift
+  unsigned number_of_chunks = n / 64;
+  unsigned bit_shift = n % 64;
+
+  // add zeros at the least-significant positions
+  if (number_of_chunks > 0) {
+      // add zeros to the beginning of the vector
+      result.value.insert(result.value.begin(), number_of_chunks, 0);
+  }
+
+  if (bit_shift > 0) {
+      uint64_t carry = 0;
+      for (size_t i = 0; i < result.value.size(); ++i) {
+          uint64_t second_carry = result.value[i] >> (64 - bit_shift); // get the bits that overflow
+          result.value[i] = (result.value[i] << bit_shift) | second_carry; // shift and add carry from before 
+          carry = second_carry;
+      }
+      
+      if (carry > 0) {
+          result.value.push_back(carry);
+      }
+  }
+
+  return final_result;
 }
 
 BigInt BigInt::operator*(const BigInt &rhs) const
 {
   // TODO: implement
+  
+  bool resultIsNegative = (this->isNegative != rhs.isNegative);
+
+  if (this->is_zero() || rhs.is_zero()) {
+      return BigInt(0, false);
+  }
+
+  BigInt result(0, false);
+
+  // continue with the function here (pretty sure we have to iterate and add using operator+)
+
 }
 
 BigInt BigInt::operator/(const BigInt &rhs) const
 {
   // TODO: implement
+  // Check for division by zero
+  if (rhs.is_zero()) {
+      throw std::overflow_error("Division by zero");
+  }
+
+  // If the left-hand side is zero, return zero    
+  if (this->is_zero()) {
+      return BigInt(0, false);
+  }
+
+  // Handle the sign of the result
+  bool resultIsNegative = (this->isNegative != rhs.isNegative);
+
+  // Use magnitudes for the binary search (ignore signs during computation)
+  BigInt lhs_abs = this->isNegative ? -(*this) : *this;
+  BigInt rhs_abs = rhs.isNegative ? -rhs : rhs;
+
+  // continue working at this point - most likely gotta do binary search 
 }
 
 int BigInt::compare(const BigInt &rhs) const
 {
   // TODO: implement
+  // check for different signs 
+    if (this->isNegative && !rhs.isNegative) {
+        return -1;  // negative < positive
+    }
+    if (!this->isNegative && rhs.isNegative) {
+        return 1;   // positive > negative
+    }
+
+    // if both are non-negative or negative, compare magnitudes
+    int magnitude_compare = compare_magnitude(*this, rhs);
+
+    // if both are positive or negative
+    if (this->isNegative) {
+        // for negative numbers, reverse the result
+        return -magnitude_compare;
+    } else {
+        return magnitude_compare;
+    }
+}
+
+// helper function 
+int BigInt::compare_magnitude(const BigInt &lhs, const BigInt &rhs) const {
+    // compare the # of elements in the bit vectors (larger vectors = larger values)
+    if (lhs.value.size() > rhs.value.size()) {
+        return 1;  // lhs is larger
+    }
+    if (lhs.value.size() < rhs.value.size()) {
+        return -1; // rhs is larger 
+    }
+
+    // for same size vectors, compare element by element from most to least significant
+    for (int i = lhs.value.size() - 1; i >= 0; --i) {
+        if (lhs.value[i] > rhs.value[i]) {
+            return 1;
+        }
+        if (lhs.value[i] < rhs.value[i]) {
+            return -1;
+        }
+    }
+
+    // this indicates the magnitudes are equal
+    return 0;
 }
 
 std::string BigInt::to_hex() const
