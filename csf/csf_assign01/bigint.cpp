@@ -345,7 +345,7 @@ bool BigInt::is_bit_set(unsigned n) const
   return (value[chunk_pos] & (1ULL << bit_pos)) != 0;
 }
 
-BigInt BigInt::operator<<(unsigned n) const
+/*BigInt BigInt::operator<<(unsigned n) const
 {
   // TODO: implement
   BigInt result = *this;
@@ -374,7 +374,44 @@ BigInt BigInt::operator<<(unsigned n) const
   }
 
   return result;
+} */
+
+BigInt BigInt::operator<<(unsigned n) const
+{
+  if (isNegative) {
+    throw std::invalid_argument("Cannot apply left shift to negative value");
+  }
+  // Create a copy of the current BigInt for the result
+  BigInt result = *this;
+
+  // Calculate the number of full 64-bit chunks to shift
+  unsigned number_of_chunks = n / 64;
+  unsigned bit_shift = n % 64;
+
+  // Add zeros at the least-significant positions for chunk shifting
+  if (number_of_chunks > 0) {
+      // Insert zeros at the beginning to shift left by the number of chunks
+      result.value.insert(result.value.begin(), number_of_chunks, 0);
+  }
+
+  // Handle the bit shifting within chunks
+  if (bit_shift > 0) {
+      uint64_t carry = 0;  // Initialize the carry variable for shifted bits
+      for (size_t i = 0; i < result.value.size(); ++i) {
+          uint64_t new_carry = result.value[i] >> (64 - bit_shift); // Get the bits that will overflow to the next chunk
+          result.value[i] = (result.value[i] << bit_shift) | carry; // Shift current chunk left and add the previous carry
+          carry = new_carry; // Update carry for the next iteration
+      }
+
+      // If there's still a carry left after the loop, push it as a new chunk
+      if (carry > 0) {
+          result.value.push_back(carry);
+      }
+  }
+
+  return result;
 }
+
 
 BigInt BigInt::operator*(const BigInt &rhs) const
 {

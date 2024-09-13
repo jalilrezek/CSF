@@ -42,6 +42,9 @@ public:
 
 
   //! constructor taking in a vector not an initializer_list
+  //!
+  //! @param vals a vector of uint64_t values
+  //! negative: An optional parameter to indicate the sign of the BigInt
   BigInt(std::vector<uint64_t> vals, bool negative = false);
 
 
@@ -89,12 +92,6 @@ public:
   //!         the index is outside the bounds of the internal vector
   //!         containing the bit string)
   uint64_t get_bits(unsigned index) const;
-
-int thisGreaterMagThanOther(const BigInt& rhs) const;
-
-std::vector<uint64_t> addMagnitudes(const BigInt& rhs) const;
-
-std::vector<uint64_t> subtractMagnitudes(const BigInt& rhs) const;
 
   //! Addition operator.
   //!
@@ -199,8 +196,35 @@ std::vector<uint64_t> subtractMagnitudes(const BigInt& rhs) const;
 private:
   // TODO: add helper functions
 
-  int compare_magnitude(const BigInt &lhs, const BigInt &rhs) const;
-  BigInt add_magnitude(const BigInt &lhs, const BigInt &rhs) const;
+  int compare_magnitude(const BigInt &lhs, const BigInt &rhs) const; //Tayseer built this, as I was debugging
+  // I chose to stick to my functions since I understood them better.
+  BigInt add_magnitude(const BigInt &lhs, const BigInt &rhs) const; //Tayseer built this. Same reasoning as above.
+
+  //! Compares the magnitudes (absolute values) of this BigInt and the given BigInt `rhs`.
+  //! This function is used for comparisons where the sign of the BigInt is irrelevant, 
+  //! focusing purely on the size of the absolute values.
+  //!
+  //! @param rhs the BigInt to compare against
+  //! @return 1 if this BigInt has a greater magnitude, -1 if rhs has a greater magnitude,
+  //!         and 0 if the magnitudes are equal.
+  int thisGreaterMagThanOther(const BigInt& rhs) const;
+
+  //! Adds the magnitudes (absolute values) of this BigInt and the given BigInt `rhs`.
+  //! The result is stored as a vector of 64-bit chunks, with no regard for the sign of either value.
+  //! This is useful for operations where the result needs to consider magnitude without handling sign directly.
+  //!
+  //! @param rhs the BigInt to add
+  //! @return a vector of uint64_t representing the sum of the magnitudes of the two BigInt values
+  std::vector<uint64_t> addMagnitudes(const BigInt& rhs) const;
+
+  //! Subtracts the magnitude (absolute value) of the given BigInt `rhs` from the magnitude of this BigInt.
+  //! Assumes that this BigInt has a greater or equal magnitude compared to `rhs`.
+  //! Like the `addMagnitudes` function, this function operates on the absolute values of the BigInts.
+  //! The result is stored as a vector of 64-bit chunks, and the caller is responsible for determining the final sign of the result.
+  //!
+  //! @param rhs the BigInt to subtract from this BigInt
+  //! @return a vector of uint64_t representing the difference between the magnitudes of the two BigInt values
+  std::vector<uint64_t> subtractMagnitudes(const BigInt& rhs) const;
 };
 
 #endif // BIGINT_H
