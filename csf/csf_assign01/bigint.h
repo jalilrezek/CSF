@@ -198,6 +198,9 @@ std::vector<uint64_t> subtractMagnitudes(const BigInt& rhs) const;
 
 private:
   // TODO: add helper functions
+
+  int compare_magnitude(const BigInt &lhs, const BigInt &rhs) const;
+  BigInt add_magnitude(const BigInt &lhs, const BigInt &rhs) const;
 };
 
 #endif // BIGINT_H

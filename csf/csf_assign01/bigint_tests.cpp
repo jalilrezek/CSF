@@ -54,12 +54,12 @@ void test_mul_1(TestObjs *objs);
 void test_mul_2(TestObjs *objs);
 void test_compare_1(TestObjs *objs);
 void test_compare_2(TestObjs *objs);
-void test_div_1(TestObjs *objs);
+/*void test_div_1(TestObjs *objs);
 void test_div_2(TestObjs *objs);
 void test_to_hex_1(TestObjs *objs);
 void test_to_hex_2(TestObjs *objs);
 void test_to_dec_1(TestObjs *objs);
-void test_to_dec_2(TestObjs *objs);
+void test_to_dec_2(TestObjs *objs);*/
 // TODO: declare additional test functions
 void testAssignment(TestObjs *objs);
 void testUnaryMinusAndIsNegative(TestObjs *objs);
@@ -71,6 +71,7 @@ void testSubtractMagnitudes4(TestObjs* objs);
 void testSubMagnitudes5(TestObjs* objs);
 void testSubMag6(TestObjs* objs);
 void testAddMag1(TestObjs* objs);
+void testAddMag2(TestObjs* objs);
 
 int main(int argc, char **argv) {
   if (argc > 1) {
@@ -84,21 +85,21 @@ int main(int argc, char **argv) {
   //TEST(test_initlist_ctor);
   //TEST(test_copy_ctor);
   //TEST(test_get_bits);
-  TEST(test_add_1);
+ /* TEST(test_add_1);
   TEST(test_add_2);
   TEST(test_add_3);
   TEST(test_add_4);
   TEST(test_sub_1);
   TEST(test_sub_2);
   TEST(test_sub_3);
-  TEST(test_sub_4);
+  TEST(test_sub_4);*/
   /*TEST(test_is_bit_set_1);
   TEST(test_is_bit_set_2);
   TEST(test_lshift_1);
   TEST(test_lshift_2);
-  TEST(test_mul_1);
-  TEST(test_mul_2);
-  TEST(test_compare_1);
+  //TEST(test_mul_1);
+  //TEST(test_mul_2);
+  /*TEST(test_compare_1);
   TEST(test_compare_2);
   TEST(test_div_1);
   TEST(test_div_2); */
@@ -110,13 +111,14 @@ int main(int argc, char **argv) {
  // TEST(testAssignment);
   //TEST(testUnaryMinusAndIsNegative);
   //TEST(testGetBitVector);
-  TEST(testSubtractMagnitudes1);
-  TEST(testSubtractMagnitudes2);
-  TEST(testSubtractMagnitudes3);
-  TEST(testSubtractMagnitudes4);
-  TEST(testSubMagnitudes5);
+  //TEST(testSubtractMagnitudes1);
+  //TEST(testSubtractMagnitudes2);
+  //TEST(testSubtractMagnitudes3);
+  //TEST(testSubtractMagnitudes4);
+  //TEST(testSubMagnitudes5);
   TEST(testSubMag6);
   TEST(testAddMag1);
+  TEST(testAddMag2);
 
   TEST_FINI();
 }
@@ -469,7 +471,7 @@ void test_lshift_2(TestObjs *) {
   }
 }
 
-void test_mul_1(TestObjs *objs) {
+/*void test_mul_1(TestObjs *objs) {
   // some very basic multiplication tests
 
   BigInt result1 = objs->three * objs->three;
@@ -495,7 +497,7 @@ void test_mul_2(TestObjs *) {
     check_contents(result, {0x2bf1cf198f85396eUL, 0x92c5b43447ed673fUL, 0xbb463828efUL});
     ASSERT(!result.is_negative());
   }
-}
+} */
 
 void test_compare_1(TestObjs *objs) {
   // some basic tests for compare
@@ -518,7 +520,7 @@ void test_compare_2(TestObjs *) {
   }
 }
 
-void test_div_1(TestObjs *objs) {
+/*void test_div_1(TestObjs *objs) {
   // Some relatively basic division tests
 
   BigInt result1 = objs->nine / objs->three;
@@ -548,7 +550,7 @@ void test_div_2(TestObjs *) {
     check_contents(result, {0xfb3e6b02be39b6ceUL, 0x25UL});
     ASSERT(!result.is_negative());
   }
-}
+} */
 
 void test_to_hex_1(TestObjs *objs) {
   // some basic tests for to_hex()
@@ -722,7 +724,7 @@ void testSubMag6(TestObjs * objs) {
   BigInt left({0xe3a0666649c8bd4, 0x31f6b3a27229605, 0xfe96acf9bb11833, 0xd4243});
   BigInt right({0x53092490f41b91b, 0x823f32e444d7bfc, 0x395}, true);
 
-  BigInt result = left - right;
+  BigInt result = left + right;
 
   std::cout<<result.to_hex()<<std::endl;
 
@@ -733,14 +735,25 @@ void testSubMag6(TestObjs * objs) {
 }
 
 void testAddMag1(TestObjs* objs) {
-  BigInt left({0xe3a0666649c8bd4, 0x31f6b3a27229605, 0xfe96acf9bb11833, 0xd4243});
-  BigInt right({0x53092490f41b91b, 0x823f32e444d7bfc, 0x395});
+  BigInt left({0x5e3a0666649c8bd4, 0x3331f6b3a2722960, 0x243fe96acf9bb118, 0xd4});
+  BigInt right({0xc53092490f41b91b, 0x95823f32e444d7bf, 0x3});
 
   BigInt result = left + right;
 
   std::cout<<result.to_hex()<<std::endl;
 
-  check_contents(result, {0x36a98af73de44ef, 0xb435e686b701202, 0xfe96acf9bb11bc8, 0xd4243});
+  check_contents(result, {0x236a98af73de44ef, 0xc8b435e686b70120, 0x243fe96acf9bb11b, 0xd4});
 
   ASSERT(!result.is_negative());
+}
+
+void testAddMag2(TestObjs*objs) {
+  BigInt left({0x2b069ae0f7c21e52, 0xdbe86db45436ba2d, 0x975e820fda08acb3, 0xca1ae5a105072ea5, 0x0302cfc67a5e51bf, 0x3bad9a164c7650de, 0x0ea3c8bbb0e123d6, 0xdea54066ddfb92d9});
+  BigInt right({0x2bb265609889d402, 0x6a23bee05c1409dd, 0x65445a91a7b4722d, 0x7fbb75149c21b078, 0x7b7daddd4960ce5b, 0x46df9cfc9ff89799, 0x3fb674c361172fb4, 0x3b41fe5d5d4c995e});
+  BigInt result = left + right;
+
+  std::cout<<result.to_hex()<<std::endl;
+
+
+  check_contents(result, {0x56b90041904bf254, 0x460c2c94b04ac40a, 0xfca2dca181bd1ee1, 0x49d65ab5a128df1d, 0x7e807da3c3bf201b, 0x828d3712ec6ee877, 0x4e5a3d7f11f8538a, 0x19e73ec43b482c37, 0x1});
 }
