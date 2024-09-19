@@ -1,0 +1,3 @@
+scp Downloads/JHU_Year_4/CSF/csf_assign02.zip jrezek1@ugrad1.cs.jhu.edu:~
+
+this is how you get the homework.
