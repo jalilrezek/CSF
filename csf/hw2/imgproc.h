@@ -66,6 +66,9 @@ int imgproc_composite( struct Image *base_img, struct Image *overlay_img, struct
 
 uint32_t** to2D(uint32_t* data, int32_t width, int32_t height);
 
-uint32_t* backTo1D(uint32_t* oneDimResult, uint32_t** twoDim, int32_t width, int32_t height);
+void backTo1D(struct Image *output_img, uint32_t** twoDim, int32_t width, int32_t height);
+
+uint32_t** makeSubpic(uint32_t** twoDimInput, int n, int32_t subHeight, int32_t subWidth);
+
 
 #endif // IMGPROC_H
