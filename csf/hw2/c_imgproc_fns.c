@@ -235,7 +235,28 @@ int imgproc_tile( struct Image *input_img, int n, struct Image *output_img ) {
 //   output_img - pointer to the output Image (in which the transformed
 //                pixels should be stored)
 void imgproc_grayscale( struct Image *input_img, struct Image *output_img ) {
-  // TODO: implement
+  // set output image dimensions to match the input image
+  output_img->width = input_img->width;
+  output_img->height = input_img->height;
+
+  // allocate memory for the output (1 uint32_t per 1 pixel)
+  output_img->data = malloc(input_img->width * input_img->height * sizeof(uint32_t));
+
+  // for loop that goes through all pixels in input image
+  for (int i = 0; i < input_img->width * input_img->height; i++) {
+    // get the colors for pixel (r, b, g, alpha) 
+    uint32_t pixel = input_img->data[i];
+    uint32_t red = (pixel >> 24) & 0xFF; // bits 24-31 for red
+    uint32_t green = (pixel >> 16) & 0xFF; // bits 16-23 for green
+    uint32_t blue = (pixel >> 8) & 0xFF;  // bits 8-15 for blue 
+    uint32_t alpha = pixel & 0xFF;     // bits 0-7 for alpha
+
+    // get grayscale color using equation 
+    uint32_t gray = (79 * red + 128 * green + 49 * blue) / 256;
+
+    // create new pixel by setting rbg values to gray (alpha doesn't change)
+    output_img->data[i] = (gray << 24) | (gray << 16) | (gray << 8) | alpha;
+  }
 }
 
 // Overlay a foreground image on a background image, using each foreground
