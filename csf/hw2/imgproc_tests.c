@@ -348,3 +348,51 @@ void test_composite_basic( TestObjs *objs ) {
   ASSERT( 0x000080FF == objs->smiley_out->data[87] );
 }
 
+// additional test cases for grayscale
+void test_grayscale_single_color(TestObjs *objs) {
+    Picture red_pic = {
+        TEST_COLORS,
+        2, 2,
+        "rr"
+        "rr"
+    };
+    struct Image *red_img = picture_to_img(&red_pic);
+    struct Image output_img;
+    img_init(&output_img, red_img->width, red_img->height);
+    imgproc_grayscale(red_img, &output_img);
+
+    // grayscale value of red is 0x4E4E4EFF
+    for (int i = 0; i < output_img.width * output_img.height; ++i) {
+        ASSERT(output_img.data[i] == 0x4E4E4EFF);
+    }
+
+    destroy_img(red_img);
+    destroy_img(&output_img);
+}
+
+void test_grayscale_multiple_colors(TestObjs *objs) {
+    Picture rgb_pic = {
+        TEST_COLORS,
+        2, 2,
+        "rg"
+        "bc"
+    };
+    struct Image *color_img = picture_to_img(&rgb_pic);
+    struct Image output_img;
+    img_init(&output_img, color_img->width, color_img->height);
+    imgproc_grayscale(color_img, &output_img);
+
+    uint32_t expected[] = {
+        0x4E4E4EFF,  // red
+        0x7F7F7FFF,  // green
+        0x303030FF,  // blue
+        0xB0B0B0FF   // white
+    };
+
+    for (int i = 0; i < 4; ++i) {
+        ASSERT(output_img.data[i] == expected[i]);
+    }
+
+    destroy_img(color_img);
+    destroy_img(&output_img);
+}
