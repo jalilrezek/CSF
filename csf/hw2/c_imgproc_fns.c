@@ -273,5 +273,41 @@ void imgproc_grayscale( struct Image *input_img, struct Image *output_img ) {
 //   and overlay image do not have the same dimensions
 int imgproc_composite( struct Image *base_img, struct Image *overlay_img, struct Image *output_img ) {
   // TODO: implement
-  return 0;
+  // make sure that the dimensions match for the base and overlay image 
+  if (base_img->width != overlay_img->width || base_img->height != overlay_img->height) {
+      return 0;  // fail if they do not match
+  }
+  
+  // set output image dimensions to match base and overlay images
+  output_img->width = base_img->width;
+  output_img->height = base_img->height;
+
+  // allocate memory for the output (1 uint32_t per 1 pixel)
+  output_img->data = malloc(base_img->width * base_img->height * sizeof(uint32_t));
+
+  // for loop that goes through all pixels in base and overlay images
+  for (int i = 0; i < base_img->width * base_img->height; i++) {
+      // get the colors for overlay pixel (r, b, g, alpha) 
+      uint32_t overlay_pixel = overlay_img->data[i];
+      uint32_t o_red = (overlay_pixel >> 24) & 0xFF;  // bits 24-31 for red
+      uint32_t o_green = (overlay_pixel >> 16) & 0xFF;  // bits 16-23 for green
+      uint32_t o_blue = (overlay_pixel >> 8) & 0xFF;   // bits 8-15 for blue
+      uint32_t o_alpha = overlay_pixel & 0xFF;          // bits 0-7 for opacity (alpha) 
+
+      // get the colors for base pixel (r, b, g)
+      uint32_t base_pixel = base_img->data[i];
+      uint32_t b_red = (base_pixel >> 24) & 0xFF;  // bits 24-31 for red
+      uint32_t b_green = (base_pixel >> 16) & 0xFF;  // bits 16-23 for green
+      uint32_t b_blue = (base_pixel >> 8) & 0xFF;   // bits 8-15 for blue
+
+      // blend the colors using alpha from the overlay pixel
+      uint32_t r = (o_alpha * o_red + (255 - o_alpha) * b_red) / 255;
+      uint32_t g = (o_alpha * o_green + (255 - o_alpha) * b_green) / 255;
+      uint32_t b = (o_alpha * o_blue + (255 - o_alpha) * b_blue) / 255;
+
+      // create the final pixel - blend r, b, g and set alpha to 255 for fully opaque
+      output_img->data[i] = (r << 24) | (g << 16) | (b << 8) | 0xFF;
+  }
+  
+  return 1;
 }
