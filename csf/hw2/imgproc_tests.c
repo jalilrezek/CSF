@@ -100,6 +100,9 @@ void test_composite_basic( TestObjs *objs );
 // TODO: add prototypes for additional test functions
 void test_grayscale_single_color(TestObjs *objs)
 void test_grayscale_multiple_colors(TestObjs *objs)
+void test_composite_basic_opacity(TestObjs *objs)
+void test_composite_completely_opaque(TestObjs *objs)
+void test_composite_full_transparency(TestObjs *objs)
 
 
 int main( int argc, char **argv ) {
@@ -120,6 +123,9 @@ int main( int argc, char **argv ) {
   TEST( test_composite_basic );
   TEST(test_grayscale_single_color);
   TEST(test_grayscale_multiple_colors);
+  TEST(test_composite_basic_opacity);
+  TEST(test_composite_completely_opaque);
+  TEST(test_composite_full_transparency);
   TEST_FINI();
 }
 
@@ -398,5 +404,102 @@ void test_grayscale_multiple_colors(TestObjs *objs) {
     }
 
     destroy_img(color_img);
+    destroy_img(&output_img);
+}
+
+// additional tests for composite 
+void test_composite_basic_opacity(TestObjs *objs) {
+    // all red base image and overlay image with varying opacity values
+    Picture pic = {
+        TEST_COLORS,
+        2, 2,
+        "rr"
+        "rr"
+    };
+    struct Image *base_img = picture_to_img(&pic);
+    Picture overlay_pic = {
+        OVERLAY_COLORS,
+        2, 2,
+        "R "  // Semi-transparent red and fully transparent pixel
+        " g"  // Fully opaque green and fully transparent pixel
+    };
+    struct Image *overlay_img = picture_to_img(&overlay_pic);
+    struct Image output_img;
+    img_init(&output_img, base_img->width, base_img->height);
+    imgproc_composite(base_img, overlay_img, &output_img);
+
+    uint32_t expected[] = {
+        0xFF0000FF,  // Fully opaque red
+        0xFF00007F,  // Semi-transparent red blended with red
+        0x00FF00FF,  // Fully opaque green
+        0xFF0000FF   // Transparent pixel does not modify the base image
+    };
+
+    for (int i = 0; i < 4; ++i) {
+        ASSERT(output_img.data[i] == expected[i]);
+    }
+
+    destroy_img(base_img);
+    destroy_img(overlay_img);
+    destroy_img(&output_img);
+}
+
+void test_composite_full_transparency(TestObjs *objs) {
+    // fully transparent overlay
+    Picture pic = {
+        TEST_COLORS,
+        2, 2,
+        "rr"
+        "rr"
+    };
+    struct Image *base_img = picture_to_img(&pic);
+
+    Picture overlay_pic = {
+        OVERLAY_COLORS,
+        2, 2,
+        "  "
+        "  "
+    };
+    struct Image *overlay_img = picture_to_img(&overlay_pic);
+    struct Image output_img;
+    img_init(&output_img, base_img->width, base_img->height);
+    imgproc_composite(base_img, overlay_img, &output_img);
+
+    for (int i = 0; i < 4; ++i) {
+        ASSERT(output_img.data[i] == base_img->data[i]);
+    }
+
+    destroy_img(base_img);
+    destroy_img(overlay_img);
+    destroy_img(&output_img);
+}
+
+void test_composite_completely_opaque(TestObjs *objs) {
+    // fully opaque overlay
+    Picture pic = {
+        TEST_COLORS,
+        2, 2,
+        "rr"
+        "rr"
+    };
+    struct Image *base_img = picture_to_img(&pic);
+
+    Picture overlay_pic = {
+        OVERLAY_COLORS,
+        2, 2,
+        "gg"
+        "gg"
+    };
+    struct Image *overlay_img = picture_to_img(&overlay_pic);
+    struct Image output_img;
+    img_init(&output_img, base_img->width, base_img->height);
+    imgproc_composite(base_img, overlay_img, &output_img);
+
+    for (int i = 0; i < 4; ++i) {
+        ASSERT(output_img.data[i] == overlay_img->data[i]);
+    }
+
+    destroy_img(base_img);
+    destroy_img(overlay_img);
     destroy_img(&output_img);
 }
