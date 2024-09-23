@@ -98,6 +98,9 @@ void test_tile_basic( TestObjs *objs );
 void test_grayscale_basic( TestObjs *objs );
 void test_composite_basic( TestObjs *objs );
 // TODO: add prototypes for additional test functions
+void test_grayscale_single_color(TestObjs *objs)
+void test_grayscale_multiple_colors(TestObjs *objs)
+
 
 int main( int argc, char **argv ) {
   // allow the specific test to execute to be specified as the
@@ -115,7 +118,8 @@ int main( int argc, char **argv ) {
   TEST( test_tile_basic );
   TEST( test_grayscale_basic );
   TEST( test_composite_basic );
-
+  TEST(test_grayscale_single_color);
+  TEST(test_grayscale_multiple_colors);
   TEST_FINI();
 }
 
