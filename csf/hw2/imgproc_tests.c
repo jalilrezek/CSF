@@ -597,6 +597,7 @@ void test_mirror_h_2x2(TestObjs *objs) {
     destroy_img(&output_img);
 }
 
+// changes made here
 void test_mirror_h_symmetrical(TestObjs *objs) {
     // horizontally symmetric image
     Picture pic = {
@@ -614,7 +615,7 @@ void test_mirror_h_symmetrical(TestObjs *objs) {
     ASSERT(images_equal(input_img, &output_img));
 
     destroy_img(input_img);
-    destroy_img(&output_img);
+    destroy_img(output_img);
 }
 
 void test_mirror_h_with_single_column(TestObjs *objs) {
