@@ -98,11 +98,11 @@ void test_tile_basic( TestObjs *objs );
 void test_grayscale_basic( TestObjs *objs );
 void test_composite_basic( TestObjs *objs );
 // TODO: add prototypes for additional test functions
-void test_grayscale_single_color(TestObjs *objs)
-void test_grayscale_multiple_colors(TestObjs *objs)
-void test_composite_basic_opacity(TestObjs *objs)
-void test_composite_completely_opaque(TestObjs *objs)
-void test_composite_full_transparency(TestObjs *objs)
+void test_grayscale_single_color(TestObjs *objs);
+void test_grayscale_multiple_colors(TestObjs *objs);
+void test_composite_basic_opacity(TestObjs *objs);
+void test_composite_completely_opaque(TestObjs *objs);
+void test_composite_full_transparency(TestObjs *objs);
 
 
 int main( int argc, char **argv ) {
