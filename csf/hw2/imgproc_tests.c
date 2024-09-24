@@ -398,7 +398,7 @@ void test_grayscale_single_color(TestObjs *objs) {
     }
 
     destroy_img(red_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_grayscale_multiple_colors(TestObjs *objs) {
@@ -425,7 +425,7 @@ void test_grayscale_multiple_colors(TestObjs *objs) {
     }
 
     destroy_img(color_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 // additional tests for composite 
@@ -462,7 +462,7 @@ void test_composite_basic_opacity(TestObjs *objs) {
 
     destroy_img(base_img);
     destroy_img(overlay_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_composite_full_transparency(TestObjs *objs) {
@@ -492,7 +492,7 @@ void test_composite_full_transparency(TestObjs *objs) {
 
     destroy_img(base_img);
     destroy_img(overlay_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_composite_completely_opaque(TestObjs *objs) {
@@ -522,7 +522,7 @@ void test_composite_completely_opaque(TestObjs *objs) {
 
     destroy_img(base_img);
     destroy_img(overlay_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 /*
@@ -594,7 +594,7 @@ void test_mirror_h_2x2(TestObjs *objs) {
 
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_h_symmetrical(TestObjs *objs) {
@@ -614,7 +614,7 @@ void test_mirror_h_symmetrical(TestObjs *objs) {
     ASSERT(images_equal(input_img, &output_img));
 
     destroy_img(input_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_h_with_single_column(TestObjs *objs) {
@@ -634,7 +634,7 @@ void test_mirror_h_with_single_column(TestObjs *objs) {
     ASSERT(images_equal(input_img, &output_img));
 
     destroy_img(input_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_h_3x3(TestObjs *objs) {
@@ -664,7 +664,7 @@ void test_mirror_h_3x3(TestObjs *objs) {
 
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_h_4x4(TestObjs *objs) {
@@ -696,7 +696,7 @@ void test_mirror_h_4x4(TestObjs *objs) {
 
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 // my tests for mirror vertical function 
@@ -725,7 +725,7 @@ void test_mirror_v_basic_2(TestObjs *objs) {
   
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_v_symmetrical(TestObjs *objs) {
@@ -744,7 +744,7 @@ void test_mirror_v_symmetrical(TestObjs *objs) {
     ASSERT(images_equal(input_img, &output_img));
 
     destroy_img(input_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_v_with_single_row(TestObjs *objs) {
@@ -762,7 +762,7 @@ void test_mirror_v_with_single_row(TestObjs *objs) {
     ASSERT(images_equal(input_img, &output_img));
 
     destroy_img(input_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_v_4x4(TestObjs *objs) {
@@ -795,7 +795,7 @@ void test_mirror_v_4x4(TestObjs *objs) {
 
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_v_3x3(TestObjs *objs) {
@@ -826,5 +826,5 @@ void test_mirror_v_3x3(TestObjs *objs) {
 
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
