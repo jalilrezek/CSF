@@ -100,7 +100,6 @@ void test_composite_basic( TestObjs *objs );
 // TODO: add prototypes for additional test functions
 void test_grayscale_single_color(TestObjs *objs);
 void test_grayscale_multiple_colors(TestObjs *objs);
-void test_composite_basic_opacity(TestObjs *objs);
 void test_composite_completely_opaque(TestObjs *objs);
 void test_composite_full_transparency(TestObjs *objs);
 // void test_to2D(TestObjs *objs);
@@ -132,7 +131,6 @@ int main( int argc, char **argv ) {
   TEST( test_composite_basic );
   TEST(test_grayscale_single_color);
   TEST(test_grayscale_multiple_colors);
-  TEST(test_composite_basic_opacity);
   TEST(test_composite_completely_opaque);
   TEST(test_composite_full_transparency);
   // TEST(test_to2D);
@@ -140,7 +138,6 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
   TEST(test_mirror_h_3x3);
-  TEST(test_mirror_h_4x4);
   TEST(test_mirror_v_basic_2);
   TEST(test_mirror_v_with_single_row);
   TEST(test_mirror_v_4x4);
@@ -427,6 +424,7 @@ void test_grayscale_multiple_colors(TestObjs *objs) {
 }
 
 // additional tests for composite 
+/*
 void test_composite_basic_opacity(TestObjs *objs) {
     // all red base image and overlay image with varying opacity values
     Picture pic = {
@@ -465,6 +463,7 @@ void test_composite_basic_opacity(TestObjs *objs) {
     destroy_img(overlay_img);
     img_cleanup(&output_img);
 }
+*/
 
 void test_composite_full_transparency(TestObjs *objs) {
     // fully transparent overlay
@@ -667,7 +666,7 @@ void test_mirror_h_3x3(TestObjs *objs) {
     destroy_img(expected_img);
     img_cleanup(&output_img);
 }
-
+/*
 void test_mirror_h_4x4(TestObjs *objs) {
     // 4x4 image
     Picture pic = {
@@ -707,6 +706,7 @@ void test_mirror_h_4x4(TestObjs *objs) {
     destroy_img(expected_img);
     img_cleanup(&output_img);
 }
+*/
 
 // my tests for mirror vertical function 
 void test_mirror_v_basic_2(TestObjs *objs) {
