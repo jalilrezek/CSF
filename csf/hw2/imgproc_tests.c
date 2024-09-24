@@ -103,27 +103,25 @@ void test_grayscale_multiple_colors(TestObjs *objs);
 void test_composite_basic_opacity(TestObjs *objs);
 void test_composite_completely_opaque(TestObjs *objs);
 void test_composite_full_transparency(TestObjs *objs);
-<<<<<<< HEAD
+
 void test_to2D(TestObjs *objs);
-=======
-/*
-<<<<<<< HEAD
-void test_to2D(TestObjs *objs);
-=======
->>>>>>> fcb2be13600828a54deb68d09be892fd982ec889
-  */
+void test_backTo1D(TestObjs *objs);
+void test_makeSubPic(TestObjs *objs);
+void test_PasteImage(TestObjs *objs);
+
+
+
 void test_mirror_h_2x2(TestObjs *objs);
 void test_mirror_h_symmetrical(TestObjs *objs);
 void test_mirror_h_with_single_column(TestObjs *objs);
 void test_mirror_h_3x3(TestObjs *objs);
 void test_mirror_h_4x4(TestObjs *objs);
-void test_mirror_v_basic(TestObjs *objs);
+void our_mirror_v_test(TestObjs *objs);
 void test_mirror_v_symmetrical(TestObjs *objs);
 void test_mirror_v_with_single_row(TestObjs *objs);
 void test_mirror_v_4x4(TestObjs *objs);
 void test_mirror_v_3x3(TestObjs *objs);
 
->>>>>>> c577b5301ab3bcc8320e7f61150dfbb7c04467a7
 
 
 int main( int argc, char **argv ) {
@@ -137,27 +135,34 @@ int main( int argc, char **argv ) {
   // Run tests.
   // Make sure you add additional TEST() macro invocations
   // for any additional test functions you add.
-  TEST( test_mirror_h_basic );
-  TEST( test_mirror_v_basic );
-  TEST( test_tile_basic );
-  TEST( test_grayscale_basic );
-  TEST( test_composite_basic );
-  TEST(test_grayscale_single_color);
-  TEST(test_grayscale_multiple_colors);
-  TEST(test_composite_basic_opacity);
-  TEST(test_composite_completely_opaque);
-  TEST(test_composite_full_transparency);
-  // TEST(test_to2D);
-  TEST(test_mirror_h_2x2);
+  //TEST( test_mirror_h_basic );
+  //TEST( test_mirror_v_basic );
+  //TEST( test_tile_basic );
+  //TEST( test_grayscale_basic );
+  //TEST( test_composite_basic );
+
+  //TEST(test_grayscale_single_color);
+  //TEST(test_grayscale_multiple_colors);
+  //TEST(test_composite_basic_opacity);
+  //TEST(test_composite_completely_opaque);
+  //TEST(test_composite_full_transparency);
+
+  TEST(test_to2D);
+  TEST(test_backTo1D);
+  TEST(test_makeSubPic);
+  TEST(test_PasteImage);
+
+
+  /*TEST(test_mirror_h_2x2);
   TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
   TEST(test_mirror_h_3x3);
   TEST(test_mirror_h_4x4);
-  TEST(test_mirror_v_basic);
+  TEST(our_mirror_v_test);
   TEST(test_mirror_v_symmetrical);
   TEST(test_mirror_v_with_single_row);
   TEST(test_mirror_v_4x4);
-  TEST(test_mirror_v_3x3);
+  TEST(test_mirror_v_3x3);*/
   TEST_FINI();
 }
 
@@ -536,47 +541,7 @@ void test_composite_completely_opaque(TestObjs *objs) {
     destroy_img(&output_img);
 }
 
-/*
-//Function prototype for to2D (needs to be fixed)
 
-void test_to2D(TestObjs * objs) {
-    int width = 3;
-    int height = 3;
-
-    // Input 1D data for testing
-    uint32_t inputData[] = {
-        1, 2, 3,
-        4, 5, 6,
-        7, 8, 9
-    };
-
-    // Expected 2D data
-    uint32_t expectedData[3][3] = {
-        { 1, 2, 3 },
-        { 4, 5, 6 },
-        { 7, 8, 9 }
-    };
-
-    // Call the function to test
-    uint32_t** outputData = to2D(inputData, width, height);
-
-    // Assert that each element in the output matches the expected data
-    for (int row = 0; row < height; row++) {
-        for (int col = 0; col < width; col++) {
-            assert(outputData[row][col] == expectedData[row][col]);
-        }
-    }
-
-    // Free allocated memory after the test
-    for (int row = 0; row < height; row++) {
-        free(outputData[row]);
-    }
-    free(outputData);
-
-    // Print a success message if all assertions pass
-    printf("test_to2D passed.\n");
-}
-*/
 
 // my tests for mirror horizontal function 
 void test_mirror_h_2x2(TestObjs *objs) {
@@ -711,7 +676,7 @@ void test_mirror_h_4x4(TestObjs *objs) {
 }
 
 // my tests for mirror vertical function 
-void test_mirror_v_basic(TestObjs *objs) {
+void our_mirror_v_test(TestObjs *objs) {
     // 2x2 image
     Picture pic = {
         TEST_COLORS,
@@ -839,3 +804,213 @@ void test_mirror_v_3x3(TestObjs *objs) {
     destroy_img(expected_img);
     destroy_img(&output_img);
 }
+
+
+
+// tests for Jalil helper functions
+
+
+//Function prototype for to2D 
+
+void test_to2D(TestObjs * objs) {
+    int width = 3;
+    int height = 3;
+
+    int num_pixels = width * height;
+
+  uint32_t *inputData = (uint32_t *) malloc(num_pixels * sizeof(uint32_t));
+
+
+   //Input 1D data for testing
+  for (int32_t i = 0; i < num_pixels; i++) {
+    inputData[i] = i + 1;
+  }
+
+    // Expected 2D data
+    uint32_t expectedData[3][3] = {
+        { 1, 2, 3 },
+        { 4, 5, 6 },
+        { 7, 8, 9 }
+    };
+
+    // Call the function to test
+    uint32_t** outputData = to2D(inputData, width, height);
+
+    // Assert that each element in the output matches the expected data
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            assert(outputData[row][col] == expectedData[row][col]);
+        }
+    }
+
+    // Free allocated memory after the test
+
+    free(inputData);
+
+    for (int row = 0; row < height; row++) {
+        free(outputData[row]);
+    }
+    free(outputData);
+    
+  
+
+    // Print a success message if all assertions pass
+    printf("test_to2D passed.\n");
+} 
+
+
+
+void test_backTo1D( TestObjs *objs ) {
+
+  struct Image *test_img = (struct Image *) malloc( sizeof( struct Image ) );
+  test_img->height = 4;
+  test_img->width = 4;
+  // Attempt to initialize the Image object by calling img_init
+  // Every pixel is initialized to opaque black
+  if ( img_init( test_img, test_img->width, test_img->height ) != IMG_SUCCESS ) {
+    free( test_img );
+  }
+
+  uint32_t* oneDim = (uint32_t*) malloc(sizeof(uint32_t) * test_img->height * test_img->width);
+
+  for (int i = 0; i < test_img->height * test_img->width; i++) {
+    oneDim[i] = 0x000000FFU; // opaque black value that pixels of test_img were initialized to
+  }
+
+  uint32_t** twoDim = to2D(test_img->data, test_img->width, test_img->height); // must be freed later?
+
+
+  backTo1D(test_img, twoDim, test_img->width, test_img->height);
+
+  for (int i = 0; i < test_img->width * test_img->height; i++) {
+    assert(test_img->data[i] == oneDim[i]);
+  }
+
+  //cleanup
+  // Free dynamically allocated 2D array
+  for (int i = 0; i < test_img->height; i++) {
+    free(twoDim[i]);
+  }
+  free(twoDim);
+
+  // Ensure test_img data is freed properly
+  destroy_img(test_img);  // This should free test_img->data and the image itself
+
+  free(oneDim);
+
+  
+}
+
+void test_makeSubPic(TestObjs *objs) {
+
+    int sampleDist = 2; // going to sample, from every 2nd row starting at row 0, every 2nd column, also starting at column 0.
+    // i.e. start at top left corner and choose every 2nd for rows and cols. See below to figure it out.
+
+    // fully opaque overlay
+    Picture pic = {
+        TEST_COLORS,
+        3, 3,
+        "grg"
+        "rrr"
+        "grg"
+    };
+    struct Image *orig_img = picture_to_img(&pic);
+
+    Picture subPic = {
+        OVERLAY_COLORS,
+        2, 2,
+        "gg"
+        "gg"
+    };
+    struct Image *subImg = picture_to_img(&subPic);
+
+
+    uint32_t** twoDimInData = to2D(orig_img->data, orig_img->width, orig_img->height); // FREE later
+    uint32_t** subPicResult = makeSubpic( twoDimInData, sampleDist, subImg->height, subImg->width);
+
+    for (int r = 0; r < subImg->height; r++) {
+      for (int c = 0; c < subImg->width; c++) {
+        ASSERT(subPicResult[r][c] == subImg->data[r * subImg->width + c]);
+      }
+    }
+
+    //cleanup
+
+    // free 2D array dynamically allocated
+    for (int i = 0; i < orig_img->height; i++) {
+      free(twoDimInData[i]);
+    }
+    free(twoDimInData);
+
+    // free images.
+    destroy_img(orig_img);
+    destroy_img(subImg);
+
+}
+
+void test_PasteImage(TestObjs *objs) {
+
+    // fully opaque overlay
+    Picture pic = { // the "original" which will be modified. The modified version is tested against a contrived expected result.
+        TEST_COLORS,
+        4, 4,
+        "gggg"
+        "gggg"
+        "gggg"
+        "gggg"
+    };
+    struct Image *orig_img = picture_to_img(&pic);
+
+    Picture subPic = { // what we are "pasting" into the original.
+        OVERLAY_COLORS,
+        2, 2,
+        "rr"
+        "rr"
+    };
+    struct Image *subImg = picture_to_img(&subPic);
+
+
+    Picture resultPic = { // the desired outcome that "original" should match after pasting.
+        TEST_COLORS,
+        4, 4,
+        "rrgg"
+        "rrgg"
+        "gggg"
+        "gggg"
+    };
+    struct Image *result_img = picture_to_img(&resultPic);
+
+
+    uint32_t** twoDimSubPic = to2D(subImg->data, subImg->width, subImg->height); // FREE later
+    uint32_t** twoDimResult = to2D(result_img->data, result_img->width, result_img->height); // FREE later
+
+    pasteImage(twoDimResult, twoDimSubPic, subImg->width, subImg->height, 0, 0);
+
+    backTo1D(orig_img, twoDimResult, orig_img->width, orig_img->height);
+
+    for (int i = 0; i < orig_img->height * orig_img->width; i++) {
+      ASSERT(orig_img->data[i] == result_img->data[i]);
+    }
+
+    //cleanup
+
+    // free 2D array dynamically allocated
+    for (int i = 0; i < subImg->height; i++) {
+      free(twoDimSubPic[i]);
+    }
+    free(twoDimSubPic);
+
+    for (int i = 0; i < result_img->height; i++) {
+      free(twoDimResult[i]);
+    }
+    free(twoDimResult);
+
+    // free images.
+    destroy_img(orig_img);
+    destroy_img(subImg);
+    destroy_img(result_img);
+
+}
+
+
+

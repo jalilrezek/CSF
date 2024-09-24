@@ -111,6 +111,7 @@ void imgproc_mirror_v( struct Image *input_img, struct Image *output_img ) {
   free(twoDimOutData);
 }
 
+// this function "samples" every nth pixel from an original image to make a subpicture from it.
 uint32_t** makeSubpic(uint32_t** twoDimInput, int n, int32_t subHeight, int32_t subWidth) {
 
 
@@ -131,7 +132,9 @@ uint32_t** makeSubpic(uint32_t** twoDimInput, int n, int32_t subHeight, int32_t 
 
 }
 
-void pasteImage(uint32_t** res, uint32_t** twoDimInput, uint32_t** subData, int subWidth, int subHeight, int curRow, int curCol) {
+
+// this function pastes one of the subpics made into the correct location. 
+void pasteImage(uint32_t** res, uint32_t** subData, int subWidth, int subHeight, int curRow, int curCol) {
   for (int r = 0; r < subHeight; r++) {
     for (int c = 0; c < subWidth;  c++) {
       res[r + curRow][c + curCol] = subData[r][c];
@@ -154,6 +157,11 @@ void pasteImage(uint32_t** res, uint32_t** twoDimInput, uint32_t** subData, int 
 //       be empty (i.e., have 0 width or height)
 int imgproc_tile( struct Image *input_img, int n, struct Image *output_img ) {
   // TODO: implement
+
+  // the way I implemented this function is that I make a subpic of the appropriate size (which may or may not include remainders)
+  // then I just iteratively paste the subpics into the right spots.
+  // i use 2 arrays, one representing the widths of each subpic, one the heights, to track how tall & wide the current subpic
+  // should be (i.e. handling whether there are remainders or not)
   
   // In what case does at least one tile have 0 width or height? Is it just when n exceeds either width or height?
   // if n is less than width, width can be split up into n subsections at least 1 px wide
@@ -206,7 +214,7 @@ int imgproc_tile( struct Image *input_img, int n, struct Image *output_img ) {
       uint32_t** subPic = makeSubpic( twoDimInData, n, curHeight, curWidth);
       // FREE above later!
 
-      pasteImage(outData, twoDimInData, subPic, curWidth, curHeight, curRow, curCol);
+      pasteImage(outData, subPic, curWidth, curHeight, curRow, curCol);
       curCol += curWidth;
       free2DArray(subPic, curHeight); // FREED subPic
     }
@@ -309,5 +317,9 @@ int imgproc_composite( struct Image *base_img, struct Image *overlay_img, struct
       output_img->data[i] = (r << 24) | (g << 16) | (b << 8) | 0xFF;
   }
   
+  return 1;
+}
+
+int test() {
   return 1;
 }

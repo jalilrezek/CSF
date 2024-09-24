@@ -68,11 +68,13 @@ void free2DArray(uint32_t** data, int32_t height);
 
 uint32_t** to2D(uint32_t* data, int32_t width, int32_t height);
 
+int test();
+
 void backTo1D(struct Image *output_img, uint32_t** twoDim, int32_t width, int32_t height);
 
 uint32_t** makeSubpic(uint32_t** twoDimInput, int n, int32_t subHeight, int32_t subWidth);
 
-void pasteImage(uint32_t** res, uint32_t** twoDimInput, uint32_t** subData, int subWidth, int subHeight, int curRow, int curCol);
+void pasteImage(uint32_t** res, uint32_t** subData, int subWidth, int subHeight, int curRow, int curCol);
 
 
 #endif // IMGPROC_H
