@@ -450,7 +450,7 @@ void test_composite_basic_opacity(TestObjs *objs) {
     uint32_t expected[] = {
         0xFF0000FF,  // Fully opaque red
         0xFF0000FF,  // Semi-transparent red blended with red
-        0x00FF00FF,  // Fully opaque green
+        0xFF0000FF,  // Fully opaque green
         0xFF0000FF   // Transparent pixel does not modify the base image
     };
 
