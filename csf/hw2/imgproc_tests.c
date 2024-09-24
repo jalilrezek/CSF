@@ -102,7 +102,7 @@ void test_grayscale_single_color(TestObjs *objs);
 void test_grayscale_multiple_colors(TestObjs *objs);
 void test_composite_completely_opaque(TestObjs *objs);
 void test_composite_full_transparency(TestObjs *objs);
-// void test_to2D(TestObjs *objs);
+void test_to2D(TestObjs *objs);
 void test_mirror_h_2x2(TestObjs *objs);
 void test_mirror_h_symmetrical(TestObjs *objs);
 void test_mirror_h_with_single_column(TestObjs *objs);
@@ -136,7 +136,7 @@ int main( int argc, char **argv ) {
   TEST(test_grayscale_multiple_colors);
   TEST(test_composite_completely_opaque);
   TEST(test_composite_full_transparency);
-  // TEST(test_to2D);
+  TEST(test_to2D);
   TEST(test_mirror_h_2x2);
   TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
@@ -488,7 +488,7 @@ void test_composite_completely_opaque(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
-/*
+
 //Function prototype for to2D (needs to be fixed)
 
 void test_to2D(TestObjs * objs) {
@@ -528,7 +528,7 @@ void test_to2D(TestObjs * objs) {
     // Print a success message if all assertions pass
     printf("test_to2D passed.\n");
 }
-*/
+
 
 // my tests for mirror horizontal function 
 void test_mirror_h_2x2(TestObjs *objs) {
