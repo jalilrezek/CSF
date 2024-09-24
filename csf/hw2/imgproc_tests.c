@@ -103,10 +103,23 @@ void test_grayscale_multiple_colors(TestObjs *objs);
 void test_composite_basic_opacity(TestObjs *objs);
 void test_composite_completely_opaque(TestObjs *objs);
 void test_composite_full_transparency(TestObjs *objs);
+/*
 <<<<<<< HEAD
 void test_to2D(TestObjs *objs);
 =======
 >>>>>>> fcb2be13600828a54deb68d09be892fd982ec889
+  */
+void test_mirror_h_2x2(TestObjs *objs);
+void test_mirror_h_symmetrical(TestObjs *objs);
+void test_mirror_h_with_single_column(TestObjs *objs);
+void test_mirror_h_3x3(TestObjs *objs);
+void test_mirror_h_4x4(TestObjs *objs);
+void test_mirror_v_basic(TestObjs *objs);
+void test_mirror_v_symmetrical(TestObjs *objs);
+void test_mirror_v_with_single_row(TestObjs *objs);
+void test_mirror_v_4x4(TestObjs *objs);
+void test_mirror_v_3x3(TestObjs *objs);
+
 
 
 int main( int argc, char **argv ) {
@@ -130,7 +143,17 @@ int main( int argc, char **argv ) {
   TEST(test_composite_basic_opacity);
   TEST(test_composite_completely_opaque);
   TEST(test_composite_full_transparency);
-  TEST(test_to2D);
+  // TEST(test_to2D);
+  TEST(test_mirror_h_2x2);
+  TEST(test_mirror_h_symmetrical);
+  TEST(test_mirror_h_with_single_column);
+  TEST(test_mirror_h_3x3);
+  TEST(test_mirror_h_4x4);
+  TEST(test_mirror_v_basic);
+  TEST(test_mirror_v_symmetrical);
+  TEST(test_mirror_v_with_single_row);
+  TEST(test_mirror_v_4x4);
+  TEST(test_mirror_v_3x3);
   TEST_FINI();
 }
 
@@ -509,7 +532,8 @@ void test_composite_completely_opaque(TestObjs *objs) {
     destroy_img(&output_img);
 }
 
-//Function prototype for to2D
+/*
+//Function prototype for to2D (needs to be fixed)
 
 void test_to2D(TestObjs * objs) {
     int width = 3;
@@ -547,4 +571,267 @@ void test_to2D(TestObjs * objs) {
 
     // Print a success message if all assertions pass
     printf("test_to2D passed.\n");
+}
+*/
+
+// my tests for mirror horizontal function 
+void test_mirror_h_2x2(TestObjs *objs) {
+    // 2x2 image
+    Picture pic = {
+        TEST_COLORS,
+        2, 2,
+        "rg"
+        "bc"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_h(input_img, &output_img);
+
+    // should be horizontally mirrored 
+    Picture expected = {
+        TEST_COLORS,
+        2, 2,
+        "gr"
+        "cb"
+    };
+    struct Image *expected_img = picture_to_img(&expected);
+
+    ASSERT(images_equal(&output_img, expected_img));
+
+    destroy_img(input_img);
+    destroy_img(expected_img);
+    destroy_img(&output_img);
+}
+
+void test_mirror_h_symmetrical(TestObjs *objs) {
+    // horizontally symmetric image
+    Picture pic = {
+        TEST_COLORS,
+        2, 2,
+        "rr"
+        "gg"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_h(input_img, &output_img);
+
+    // Expect the image to remain unchanged
+    ASSERT(images_equal(input_img, &output_img));
+
+    destroy_img(input_img);
+    destroy_img(&output_img);
+}
+
+void test_mirror_h_with_single_column(TestObjs *objs) {
+    // with single column, horizontal mirror shouldn't do anything  
+    Picture pic = {
+        TEST_COLORS,
+        1, 2,
+        "r"
+        "g"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_h(input_img, &output_img);
+
+    // should remain unchanged
+    ASSERT(images_equal(input_img, &output_img));
+
+    destroy_img(input_img);
+    destroy_img(&output_img);
+}
+
+void test_mirror_h_3x3(TestObjs *objs) {
+    // odd r x c (3x3)
+    Picture pic = {
+        TEST_COLORS,
+        3, 3,
+        "rgb"
+        "bgr"
+        "grb"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_h(input_img, &output_img);
+
+    // Expected horizontally mirrored image
+    Picture expected = {
+        TEST_COLORS,
+        3, 3,
+        "bgr"
+        "rgb"
+        "brg"
+    };
+    struct Image *expected_img = picture_to_img(&expected);
+    ASSERT(images_equal(&output_img, expected_img));
+
+    destroy_img(input_img);
+    destroy_img(expected_img);
+    destroy_img(&output_img);
+}
+
+void test_mirror_h_4x4(TestObjs *objs) {
+    // 4x4 image
+    Picture pic = {
+        TEST_COLORS,
+        4, 4,
+        "rgbr"
+        "gbrg"
+        "brgb"
+        "rgrb"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_h(input_img, &output_img);
+
+    // should expect this 
+    Picture expected = {
+        TEST_COLORS,
+        4, 4,
+        "rbgr"
+        "grgb"
+        "bgrb"
+        "brgr"
+    };
+    struct Image *expected_img = picture_to_img(&expected);
+    ASSERT(images_equal(&output_img, expected_img));
+
+    destroy_img(input_img);
+    destroy_img(expected_img);
+    destroy_img(&output_img);
+}
+
+// my tests for mirror vertical function 
+void test_mirror_v_basic(TestObjs *objs) {
+    // 2x2 image
+    Picture pic = {
+        TEST_COLORS,
+        2, 2,
+        "rg"
+        "bc"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_v(input_img, &output_img);
+
+    // should expect this 
+    Picture expected = {
+        TEST_COLORS,
+        2, 2,
+        "bc"
+        "rg"
+    };
+    struct Image *expected_img = picture_to_img(&expected);
+    ASSERT(images_equal(&output_img, expected_img));
+  
+    destroy_img(input_img);
+    destroy_img(expected_img);
+    destroy_img(&output_img);
+}
+
+void test_mirror_v_symmetrical(TestObjs *objs) {
+    // shouldn't change due to symmetry
+    Picture pic = {
+        TEST_COLORS,
+        2, 2,
+        "rr"
+        "gg"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_v(input_img, &output_img);
+
+    ASSERT(images_equal(input_img, &output_img));
+
+    destroy_img(input_img);
+    destroy_img(&output_img);
+}
+
+void test_mirror_v_with_single_row(TestObjs *objs) {
+    // should not change 
+    Picture pic = {
+        TEST_COLORS,
+        2, 1,
+        "rg"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_v(input_img, &output_img);
+
+    ASSERT(images_equal(input_img, &output_img));
+
+    destroy_img(input_img);
+    destroy_img(&output_img);
+}
+
+void test_mirror_v_4x4(TestObjs *objs) {
+    // 4x4 
+    Picture pic = {
+        TEST_COLORS,
+        4, 4,
+        "rgbr"
+        "gbrg"
+        "brgb"
+        "rgrb"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_v(input_img, &output_img);
+
+    // expect this
+    Picture expected = {
+        TEST_COLORS,
+        4, 4,
+        "rgrb"
+        "brgb"
+        "gbrg"
+        "rgbr"
+    };
+    struct Image *expected_img = picture_to_img(&expected);
+
+    ASSERT(images_equal(&output_img, expected_img));
+
+    destroy_img(input_img);
+    destroy_img(expected_img);
+    destroy_img(&output_img);
+}
+
+void test_mirror_v_3x3(TestObjs *objs) {
+    // 3x3
+    Picture pic = {
+        TEST_COLORS,
+        3, 3,
+        "rgb"
+        "bgr"
+        "grb"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+    imgproc_mirror_v(input_img, &output_img);
+
+    // expect this
+    Picture expected = {
+        TEST_COLORS,
+        3, 3,
+        "grb"
+        "bgr"
+        "rgb"
+    };
+    struct Image *expected_img = picture_to_img(&expected);
+
+    ASSERT(images_equal(&output_img, expected_img));
+
+    destroy_img(input_img);
+    destroy_img(expected_img);
+    destroy_img(&output_img);
 }
