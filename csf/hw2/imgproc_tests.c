@@ -424,47 +424,6 @@ void test_grayscale_multiple_colors(TestObjs *objs) {
 }
 
 // additional tests for composite 
-/*
-void test_composite_basic_opacity(TestObjs *objs) {
-    // all red base image and overlay image with varying opacity values
-    Picture pic = {
-        TEST_COLORS,
-        2, 2,
-        "rr"
-        "rr"
-    };
-    struct Image *base_img = picture_to_img(&pic);
-    Picture overlay_pic = {
-        OVERLAY_COLORS,
-        2, 2,
-        "R "  // Semi-transparent red and fully transparent pixel
-        " g"  // Fully opaque green and fully transparent pixel
-    };
-    struct Image *overlay_img = picture_to_img(&overlay_pic);
-    struct Image output_img;
-    img_init(&output_img, base_img->width, base_img->height);
-    imgproc_composite(base_img, overlay_img, &output_img);
-
-    uint32_t expected[] = {
-        0xFF0000FF,  // Fully opaque red
-        0xFF0000FF,  // Semi-transparent red blended with red
-        0xFF0000FF,  // Fully opaque green
-        0xFF0000FF   // Transparent pixel does not modify the base image
-    };
-
-    for (int i = 0; i < 4; ++i) {
-        if (output_img.data[i] != expected[i]) {
-            printf("Pixel %d mismatch: got 0x%X, expected 0x%X\n", i, output_img.data[i], expected[i]);
-        }
-        ASSERT(output_img.data[i] == expected[i]);
-    }
-
-    destroy_img(base_img);
-    destroy_img(overlay_img);
-    img_cleanup(&output_img);
-}
-*/
-
 void test_composite_full_transparency(TestObjs *objs) {
     // fully transparent overlay
     Picture pic = {
@@ -666,47 +625,6 @@ void test_mirror_h_3x3(TestObjs *objs) {
     destroy_img(expected_img);
     img_cleanup(&output_img);
 }
-/*
-void test_mirror_h_4x4(TestObjs *objs) {
-    // 4x4 image
-    Picture pic = {
-        TEST_COLORS,
-        4, 4,
-        "rgbr"
-        "gbrg"
-        "brgb"
-        "rgrb"
-    };
-    struct Image *input_img = picture_to_img(&pic);
-    struct Image output_img;
-    img_init(&output_img, input_img->width, input_img->height);
-    imgproc_mirror_h(input_img, &output_img);
-
-    // should expect this 
-    Picture expected = {
-        TEST_COLORS,
-        4, 4,
-        "rbgr"
-        "grgb"
-        "bgrb"
-        "brgr"
-    };
-    struct Image *expected_img = picture_to_img(&expected);
-
-    for (int i = 0; i < output_img.width * output_img.height; ++i) {
-        if (output_img.data[i] != expected_img->data[i]) {
-            printf("Mismatch at pixel %d: got 0x%X, expected 0x%X\n", i, output_img.data[i], expected_img->data[i]);
-        }
-        ASSERT(output_img.data[i] == expected_img->data[i]);
-    }
-  
-    // ASSERT(images_equal(&output_img, expected_img));
-
-    destroy_img(input_img);
-    destroy_img(expected_img);
-    img_cleanup(&output_img);
-}
-*/
 
 // my tests for mirror vertical function 
 void test_mirror_v_basic_2(TestObjs *objs) {
