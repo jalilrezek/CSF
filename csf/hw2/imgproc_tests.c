@@ -103,7 +103,10 @@ void test_grayscale_multiple_colors(TestObjs *objs);
 void test_composite_basic_opacity(TestObjs *objs);
 void test_composite_completely_opaque(TestObjs *objs);
 void test_composite_full_transparency(TestObjs *objs);
+<<<<<<< HEAD
 void test_to2D(TestObjs *objs);
+=======
+>>>>>>> fcb2be13600828a54deb68d09be892fd982ec889
 
 
 int main( int argc, char **argv ) {
