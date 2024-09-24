@@ -112,6 +112,8 @@ void test_mirror_v_basic_2(TestObjs *objs);
 void test_mirror_v_with_single_row(TestObjs *objs);
 void test_mirror_v_4x4(TestObjs *objs);
 void test_mirror_v_3x3(TestObjs *objs);
+void test_tile_2x2(TestObjs *objs);
+void test_tile_3x3(TestObjs *objs);
 
 int main( int argc, char **argv ) {
   // allow the specific test to execute to be specified as the
@@ -142,6 +144,8 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_v_with_single_row);
   TEST(test_mirror_v_4x4);
   TEST(test_mirror_v_3x3);
+  TEST(test_tile_2x2);
+  TEST(test_tile_3x3);
   TEST_FINI();
 }
 
