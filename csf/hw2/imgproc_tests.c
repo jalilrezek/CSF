@@ -736,3 +736,85 @@ void test_mirror_v_3x3(TestObjs *objs) {
     destroy_img(expected_img);
     img_cleanup(&output_img);
 }
+
+void test_tile_2x2(TestObjs *objs) {
+    // 4x4 input image
+    Picture pic = {
+        TEST_COLORS,
+        4, 4,
+        "rgbr"
+        "gbrg"
+        "brgb"
+        "rgrb"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+
+    // tile into 2x2 sub-images
+    int success = imgproc_tile(input_img, 2, &output_img);
+
+    Picture expected = {
+        TEST_COLORS,
+        4, 4,
+        "rgrg"
+        "rgrg"
+        "bgbg"
+        "bgbg"
+    };
+    struct Image *expected_img = picture_to_img(&expected);
+
+    ASSERT(success);
+    ASSERT(images_equal(&output_img, expected_img));
+
+    destroy_img(input_img);
+    destroy_img(expected_img);
+    img_cleanup(&output_img);
+}
+
+void test_tile_3x3(TestObjs *objs) {
+    // 9x9
+    Picture pic = {
+        TEST_COLORS,
+        9, 9,
+        "rgbgbbrgr"
+        "gbgrrgbbb"
+        "brgrgbbgr"
+        "rgbgbbrgr"
+        "gbgrrgbbb"
+        "brgrgbbgr"
+        "rgbgbbrgr"
+        "gbgrrgbbb"
+        "brgrgbbgr"
+    };
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+
+    // tile into 3x3 sub-images
+    int success = imgproc_tile(input_img, 3, &output_img);
+
+    Picture expected = {
+        TEST_COLORS,
+        9, 9,
+        "rgrrgrrgr"
+        "ggrggrggr"
+        "bbrbbbrbb"
+        "rgrrgrrgr"
+        "ggrggrggr"
+        "bbrbbbrbb"
+        "rgrrgrrgr"
+        "ggrggrggr"
+        "bbrbbbrbb"
+    };
+    struct Image *expected_img = picture_to_img(&expected);
+
+    ASSERT(success);
+    ASSERT(images_equal(&output_img, expected_img));
+  
+    destroy_img(input_img);
+    destroy_img(expected_img);
+    img_cleanup(&output_img);
+}
+
+
