@@ -98,11 +98,12 @@ void test_tile_basic( TestObjs *objs );
 void test_grayscale_basic( TestObjs *objs );
 void test_composite_basic( TestObjs *objs );
 // TODO: add prototypes for additional test functions
-void test_grayscale_single_color(TestObjs *objs)
-void test_grayscale_multiple_colors(TestObjs *objs)
-void test_composite_basic_opacity(TestObjs *objs)
-void test_composite_completely_opaque(TestObjs *objs)
-void test_composite_full_transparency(TestObjs *objs)
+void test_grayscale_single_color(TestObjs *objs);
+void test_grayscale_multiple_colors(TestObjs *objs);
+void test_composite_basic_opacity(TestObjs *objs);
+void test_composite_completely_opaque(TestObjs *objs);
+void test_composite_full_transparency(TestObjs *objs);
+void test_to2D(TestObjs *objs);
 
 
 int main( int argc, char **argv ) {
@@ -126,6 +127,7 @@ int main( int argc, char **argv ) {
   TEST(test_composite_basic_opacity);
   TEST(test_composite_completely_opaque);
   TEST(test_composite_full_transparency);
+  TEST(test_to2D);
   TEST_FINI();
 }
 
@@ -502,4 +504,44 @@ void test_composite_completely_opaque(TestObjs *objs) {
     destroy_img(base_img);
     destroy_img(overlay_img);
     destroy_img(&output_img);
+}
+
+//Function prototype for to2D
+
+void test_to2D(TestObjs * objs) {
+    int width = 3;
+    int height = 3;
+
+    // Input 1D data for testing
+    uint32_t inputData[] = {
+        1, 2, 3,
+        4, 5, 6,
+        7, 8, 9
+    };
+
+    // Expected 2D data
+    uint32_t expectedData[3][3] = {
+        { 1, 2, 3 },
+        { 4, 5, 6 },
+        { 7, 8, 9 }
+    };
+
+    // Call the function to test
+    uint32_t** outputData = to2D(inputData, width, height);
+
+    // Assert that each element in the output matches the expected data
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            assert(outputData[row][col] == expectedData[row][col]);
+        }
+    }
+
+    // Free allocated memory after the test
+    for (int row = 0; row < height; row++) {
+        free(outputData[row]);
+    }
+    free(outputData);
+
+    // Print a success message if all assertions pass
+    printf("test_to2D passed.\n");
 }
