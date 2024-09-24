@@ -103,28 +103,17 @@ void test_grayscale_multiple_colors(TestObjs *objs);
 void test_composite_basic_opacity(TestObjs *objs);
 void test_composite_completely_opaque(TestObjs *objs);
 void test_composite_full_transparency(TestObjs *objs);
-<<<<<<< HEAD
-void test_to2D(TestObjs *objs);
-=======
-/*
-<<<<<<< HEAD
-void test_to2D(TestObjs *objs);
-=======
->>>>>>> fcb2be13600828a54deb68d09be892fd982ec889
-  */
+// void test_to2D(TestObjs *objs);
 void test_mirror_h_2x2(TestObjs *objs);
 void test_mirror_h_symmetrical(TestObjs *objs);
 void test_mirror_h_with_single_column(TestObjs *objs);
 void test_mirror_h_3x3(TestObjs *objs);
 void test_mirror_h_4x4(TestObjs *objs);
-void test_mirror_v_basic(TestObjs *objs);
+void test_mirror_v_basic_2(TestObjs *objs);
 void test_mirror_v_symmetrical(TestObjs *objs);
 void test_mirror_v_with_single_row(TestObjs *objs);
 void test_mirror_v_4x4(TestObjs *objs);
 void test_mirror_v_3x3(TestObjs *objs);
-
->>>>>>> c577b5301ab3bcc8320e7f61150dfbb7c04467a7
-
 
 int main( int argc, char **argv ) {
   // allow the specific test to execute to be specified as the
@@ -153,7 +142,7 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_h_with_single_column);
   TEST(test_mirror_h_3x3);
   TEST(test_mirror_h_4x4);
-  TEST(test_mirror_v_basic);
+  TEST(test_mirror_v_basic_2);
   TEST(test_mirror_v_symmetrical);
   TEST(test_mirror_v_with_single_row);
   TEST(test_mirror_v_4x4);
@@ -711,7 +700,7 @@ void test_mirror_h_4x4(TestObjs *objs) {
 }
 
 // my tests for mirror vertical function 
-void test_mirror_v_basic(TestObjs *objs) {
+void test_mirror_v_basic_2(TestObjs *objs) {
     // 2x2 image
     Picture pic = {
         TEST_COLORS,
