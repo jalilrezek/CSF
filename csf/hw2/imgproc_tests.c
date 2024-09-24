@@ -449,16 +449,11 @@ void test_composite_basic_opacity(TestObjs *objs) {
 
     uint32_t expected[] = {
         0xFF0000FF,  // Fully opaque red
-        0xFF000080,  // Semi-transparent red blended with red
+        0xFF0000FF,  // Semi-transparent red blended with red
         0x00FF00FF,  // Fully opaque green
         0xFF0000FF   // Transparent pixel does not modify the base image
     };
 
-    /*
-    for (int i = 0; i < 4; ++i) {
-        ASSERT(output_img.data[i] == expected[i]);
-    }
-    */
     for (int i = 0; i < 4; ++i) {
         if (output_img.data[i] != expected[i]) {
             printf("Pixel %d mismatch: got 0x%X, expected 0x%X\n", i, output_img.data[i], expected[i]);
