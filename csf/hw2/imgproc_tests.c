@@ -100,9 +100,9 @@ void test_composite_basic( TestObjs *objs );
 // TODO: add prototypes for additional test functions
 void test_grayscale_single_color(TestObjs *objs);
 void test_grayscale_multiple_colors(TestObjs *objs);
-void test_composite_basic_opacity(TestObjs *objs);
 void test_composite_completely_opaque(TestObjs *objs);
 void test_composite_full_transparency(TestObjs *objs);
+<<<<<<< HEAD
 
 void test_to2D(TestObjs *objs);
 void test_backTo1D(TestObjs *objs);
@@ -111,11 +111,15 @@ void test_PasteImage(TestObjs *objs);
 
 
 
+=======
+void test_to2D(TestObjs *objs);
+>>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
 void test_mirror_h_2x2(TestObjs *objs);
 void test_mirror_h_symmetrical(TestObjs *objs);
 void test_mirror_h_with_single_column(TestObjs *objs);
 void test_mirror_h_3x3(TestObjs *objs);
 void test_mirror_h_4x4(TestObjs *objs);
+<<<<<<< HEAD
 void our_mirror_v_test(TestObjs *objs);
 void test_mirror_v_symmetrical(TestObjs *objs);
 void test_mirror_v_with_single_row(TestObjs *objs);
@@ -123,6 +127,15 @@ void test_mirror_v_4x4(TestObjs *objs);
 void test_mirror_v_3x3(TestObjs *objs);
 
 
+=======
+void test_mirror_v_basic_2(TestObjs *objs);
+void test_mirror_v_with_single_row(TestObjs *objs);
+void test_mirror_v_4x4(TestObjs *objs);
+void test_mirror_v_3x3(TestObjs *objs);
+void test_tile_2x2(TestObjs *objs);
+void test_tile_3x3(TestObjs *objs);
+void test_tile_out_of_bounds_n_fails(TestObjs *objs);
+>>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
 
 int main( int argc, char **argv ) {
   // allow the specific test to execute to be specified as the
@@ -135,6 +148,7 @@ int main( int argc, char **argv ) {
   // Run tests.
   // Make sure you add additional TEST() macro invocations
   // for any additional test functions you add.
+<<<<<<< HEAD
   //TEST( test_mirror_h_basic );
   //TEST( test_mirror_v_basic );
   //TEST( test_tile_basic );
@@ -163,6 +177,27 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_v_with_single_row);
   TEST(test_mirror_v_4x4);
   TEST(test_mirror_v_3x3);*/
+=======
+  TEST( test_mirror_h_basic );
+  TEST( test_mirror_v_basic );
+  TEST( test_tile_basic );
+  TEST( test_grayscale_basic );
+  TEST( test_composite_basic );
+  TEST(test_grayscale_single_color);
+  TEST(test_grayscale_multiple_colors);
+  TEST(test_composite_completely_opaque);
+  TEST(test_composite_full_transparency);
+  TEST(test_to2D);
+  TEST(test_mirror_h_2x2);
+  TEST(test_mirror_h_symmetrical);
+  TEST(test_mirror_h_with_single_column);
+  TEST(test_mirror_h_3x3);
+  TEST(test_mirror_v_basic_2);
+  TEST(test_mirror_v_with_single_row);
+  TEST(test_mirror_v_4x4);
+  TEST(test_mirror_v_3x3);
+  TEST(test_tile_out_of_bounds_n_fails);
+>>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
   TEST_FINI();
 }
 
@@ -414,7 +449,7 @@ void test_grayscale_single_color(TestObjs *objs) {
     }
 
     destroy_img(red_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_grayscale_multiple_colors(TestObjs *objs) {
@@ -441,46 +476,10 @@ void test_grayscale_multiple_colors(TestObjs *objs) {
     }
 
     destroy_img(color_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 // additional tests for composite 
-void test_composite_basic_opacity(TestObjs *objs) {
-    // all red base image and overlay image with varying opacity values
-    Picture pic = {
-        TEST_COLORS,
-        2, 2,
-        "rr"
-        "rr"
-    };
-    struct Image *base_img = picture_to_img(&pic);
-    Picture overlay_pic = {
-        OVERLAY_COLORS,
-        2, 2,
-        "R "  // Semi-transparent red and fully transparent pixel
-        " g"  // Fully opaque green and fully transparent pixel
-    };
-    struct Image *overlay_img = picture_to_img(&overlay_pic);
-    struct Image output_img;
-    img_init(&output_img, base_img->width, base_img->height);
-    imgproc_composite(base_img, overlay_img, &output_img);
-
-    uint32_t expected[] = {
-        0xFF0000FF,  // Fully opaque red
-        0xFF00007F,  // Semi-transparent red blended with red
-        0x00FF00FF,  // Fully opaque green
-        0xFF0000FF   // Transparent pixel does not modify the base image
-    };
-
-    for (int i = 0; i < 4; ++i) {
-        ASSERT(output_img.data[i] == expected[i]);
-    }
-
-    destroy_img(base_img);
-    destroy_img(overlay_img);
-    destroy_img(&output_img);
-}
-
 void test_composite_full_transparency(TestObjs *objs) {
     // fully transparent overlay
     Picture pic = {
@@ -508,7 +507,7 @@ void test_composite_full_transparency(TestObjs *objs) {
 
     destroy_img(base_img);
     destroy_img(overlay_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_composite_completely_opaque(TestObjs *objs) {
@@ -538,10 +537,54 @@ void test_composite_completely_opaque(TestObjs *objs) {
 
     destroy_img(base_img);
     destroy_img(overlay_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
+<<<<<<< HEAD
 
+=======
+
+//Function prototype for to2D (needs to be fixed)
+
+void test_to2D(TestObjs * objs) {
+    int width = 3;
+    int height = 3;
+
+    // Input 1D data for testing
+    uint32_t inputData[] = {
+        1, 2, 3,
+        4, 5, 6,
+        7, 8, 9
+    };
+
+    // Expected 2D data
+    uint32_t expectedData[3][3] = {
+        { 1, 2, 3 },
+        { 4, 5, 6 },
+        { 7, 8, 9 }
+    };
+
+    // Call the function to test
+    uint32_t** outputData = to2D(inputData, width, height);
+
+    // Assert that each element in the output matches the expected data
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            assert(outputData[row][col] == expectedData[row][col]);
+        }
+    }
+
+    // Free allocated memory after the test
+    for (int row = 0; row < height; row++) {
+        free(outputData[row]);
+    }
+    free(outputData);
+
+    // Print a success message if all assertions pass
+    printf("test_to2D passed.\n");
+}
+
+>>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
 
 // my tests for mirror horizontal function 
 void test_mirror_h_2x2(TestObjs *objs) {
@@ -570,7 +613,7 @@ void test_mirror_h_2x2(TestObjs *objs) {
 
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_h_symmetrical(TestObjs *objs) {
@@ -590,7 +633,7 @@ void test_mirror_h_symmetrical(TestObjs *objs) {
     ASSERT(images_equal(input_img, &output_img));
 
     destroy_img(input_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_h_with_single_column(TestObjs *objs) {
@@ -610,7 +653,7 @@ void test_mirror_h_with_single_column(TestObjs *objs) {
     ASSERT(images_equal(input_img, &output_img));
 
     destroy_img(input_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_h_3x3(TestObjs *objs) {
@@ -640,43 +683,15 @@ void test_mirror_h_3x3(TestObjs *objs) {
 
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
-}
-
-void test_mirror_h_4x4(TestObjs *objs) {
-    // 4x4 image
-    Picture pic = {
-        TEST_COLORS,
-        4, 4,
-        "rgbr"
-        "gbrg"
-        "brgb"
-        "rgrb"
-    };
-    struct Image *input_img = picture_to_img(&pic);
-    struct Image output_img;
-    img_init(&output_img, input_img->width, input_img->height);
-    imgproc_mirror_h(input_img, &output_img);
-
-    // should expect this 
-    Picture expected = {
-        TEST_COLORS,
-        4, 4,
-        "rbgr"
-        "grgb"
-        "bgrb"
-        "brgr"
-    };
-    struct Image *expected_img = picture_to_img(&expected);
-    ASSERT(images_equal(&output_img, expected_img));
-
-    destroy_img(input_img);
-    destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 // my tests for mirror vertical function 
+<<<<<<< HEAD
 void our_mirror_v_test(TestObjs *objs) {
+=======
+void test_mirror_v_basic_2(TestObjs *objs) {
+>>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
     // 2x2 image
     Picture pic = {
         TEST_COLORS,
@@ -701,26 +716,7 @@ void our_mirror_v_test(TestObjs *objs) {
   
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
-}
-
-void test_mirror_v_symmetrical(TestObjs *objs) {
-    // shouldn't change due to symmetry
-    Picture pic = {
-        TEST_COLORS,
-        2, 2,
-        "rr"
-        "gg"
-    };
-    struct Image *input_img = picture_to_img(&pic);
-    struct Image output_img;
-    img_init(&output_img, input_img->width, input_img->height);
-    imgproc_mirror_v(input_img, &output_img);
-
-    ASSERT(images_equal(input_img, &output_img));
-
-    destroy_img(input_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_v_with_single_row(TestObjs *objs) {
@@ -738,7 +734,7 @@ void test_mirror_v_with_single_row(TestObjs *objs) {
     ASSERT(images_equal(input_img, &output_img));
 
     destroy_img(input_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_v_4x4(TestObjs *objs) {
@@ -771,7 +767,7 @@ void test_mirror_v_4x4(TestObjs *objs) {
 
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
 }
 
 void test_mirror_v_3x3(TestObjs *objs) {
@@ -802,7 +798,28 @@ void test_mirror_v_3x3(TestObjs *objs) {
 
     destroy_img(input_img);
     destroy_img(expected_img);
-    destroy_img(&output_img);
+    img_cleanup(&output_img);
+}
+
+void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
+    // 2x2
+    Picture pic = {
+        TEST_COLORS,
+        2, 2,
+        "rg"
+        "bc"
+    };
+    
+    struct Image *input_img = picture_to_img(&pic);
+    struct Image output_img;
+    img_init(&output_img, input_img->width, input_img->height);
+
+    // n = 3 is larger than 2 for 2x2 dimensions
+    int success = imgproc_tile(input_img, 3, &output_img);
+    ASSERT(!success); // should fail
+
+    destroy_img(input_img);
+    img_cleanup(&output_img);
 }
 
 

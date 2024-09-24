@@ -6,5 +6,5 @@ TODO: contributions of each team member
 
 MS1:
 Jalil: Mirror_h, mirror_v, and tile
-Tayseer: Grayscale, composite, grayscale test functions, composite test functions, 
-         mirror_h test functions, mirror_v test functions
+Tayseer: Grayscale, composite, test functions for grayscale, composite, 
+         mirror_h, mirror_v, and tile
