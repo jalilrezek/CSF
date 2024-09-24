@@ -454,7 +454,15 @@ void test_composite_basic_opacity(TestObjs *objs) {
         0xFF0000FF   // Transparent pixel does not modify the base image
     };
 
+    /*
     for (int i = 0; i < 4; ++i) {
+        ASSERT(output_img.data[i] == expected[i]);
+    }
+    */
+    for (int i = 0; i < 4; ++i) {
+        if (output_img.data[i] != expected[i]) {
+            printf("Pixel %d mismatch: got 0x%X, expected 0x%X\n", i, output_img.data[i], expected[i]);
+        }
         ASSERT(output_img.data[i] == expected[i]);
     }
 
@@ -690,7 +698,15 @@ void test_mirror_h_4x4(TestObjs *objs) {
         "brgr"
     };
     struct Image *expected_img = picture_to_img(&expected);
-    ASSERT(images_equal(&output_img, expected_img));
+
+    for (int i = 0; i < output_img.width * output_img.height; ++i) {
+        if (output_img.data[i] != expected_img->data[i]) {
+            printf("Mismatch at pixel %d: got 0x%X, expected 0x%X\n", i, output_img.data[i], expected_img->data[i]);
+        }
+        ASSERT(output_img.data[i] == expected_img->data[i]);
+    }
+  
+    // ASSERT(images_equal(&output_img, expected_img));
 
     destroy_img(input_img);
     destroy_img(expected_img);
