@@ -121,7 +121,7 @@ grayscale_loop:
 	addl %eax, %edi # current total + (49 * b), store in edi
 
 	# changed from rdi to edi (don't overwrite rdi)
-	shrq $8, %edi # shift to the right by 8bits to divide by 256, store grayscale in edi
+	shrl $8, %edi # shift to the right by 8bits to divide by 256, store grayscale in edi
 
 	movzbl %bl, %eax # move alpha from ebx to eax
 	shll $8, %eax # shift alpha to the left by 8bits
