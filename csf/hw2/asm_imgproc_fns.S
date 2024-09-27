@@ -86,7 +86,59 @@ imgproc_tile:
 	.globl imgproc_grayscale
 imgproc_grayscale:
 	/* TODO: implement */
-	ret
+	pushq %rbp # save base ptr onto the stack 
+	movq %rsp, %rbp # set base ptr to the same value as stack ptr
+
+	movq 8(%rdi), %r12 # width of input img into r12 (stored in Image struct with an offset of 8)
+	movq 12(%rdi), %r13 # height of input img into r13 (stored in Image struct with an offset of 12)
+
+	movq $0, %r10 # initialize pixel index to 0 so we can iterate over the pixels
+
+grayscale_loop:
+	movq %r12, %rcx # copy width to rcx (temp register)
+	imulq %r13, %rcx # width, r12 times height, r13 = rcx, total # of pixel 
+
+	cmpq %r10, %rcx # compare current pixel index (r10) with total # of pixels (rcx)
+	jge grayscale_done # exit loop if r10 is greater than or equal to rcx
+
+	# load 32bit pixel val from 'input_img->data[r10]'
+	movl 16($rdi, %r10, 4), %eax # start of the data array is rdi+16
+
+	movzbl %al, %ebx # move pixel alpha to ebx to preserve it (least significant byte)
+	movzbl %ah, %ecx # move pixel blue to ecx (2nd byte)
+	shrq $16, %rax # shift rax to the right by 16bits (bring green to lowest byte)
+	movzbl %al, %edx # move pixel green into edx (3rd byte)
+	shrq $8, %rax # shift rax to the right by 8bits (bring red to lowest byte)
+	movzbl %al, %eax # move pixel red into eax (4th byte)
+
+	# for grayscale: y = (79 * r + 128 * g + 49 * b) / 256
+	movl $79, %edi # load 79 into edi for red
+	imull %eax, %edi # multiply R by 79, store in edi again 
+	movl $128, %eax # load 128 into eax for green
+	imull %edx, %eax # multiply G by 128, store in eax again
+	addl %eax, %edi # current total = (79 * r + 128 * g), store in edi
+	movl $49, %eax # load 49 into eax for blue
+	imull %ecx, %eax # multiply B by 49, store in eax again
+	addl %eax, %edi # current total + (49 * b), store in edi
+
+	shrq %8, %rdi # shift to the right by 8bits to divide by 256, store grayscale in rdi
+
+	movzbl %bl, %eax # move alpha from ebx to eax
+	shll $8, %eax # shift alpha to the left by 8bits
+	orl %edi, %eax # combine grayscale value into pixel
+	shll $8, %eax # shift this 'total' to the left by 8bits
+	orl %edi, %eax # copy grayscale value to blue
+	shll $8, %eax # shift this 'total' to the left by 8bits
+	orl %ebx, %eax # add original alpha value from ebx to eax
+
+	movl %eax, 16(%rsi, %r10, 4) # store 32bit grayscale pixel in 'output_img->data[r10]'
+
+	incq %r10 # increment r10
+	jmp grayscale_loop # jump back to the top of the loop for next pixel
+
+grayscale_done:
+	popq %rbp # restore old base ptr
+	ret # return
 
 /*
  * int imgproc_composite( struct Image *base_img, struct Image *overlay_img );
