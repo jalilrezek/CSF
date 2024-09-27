@@ -1059,7 +1059,13 @@ void test_grayscale_assembly(TestObjs *objs) {
 
     // check if everything matches
     for (int i = 0; i < 4; ++i) {
-        ASSERT(output_img.data[i] == expected[i]);
+        uint32_t actual = output_img.data[i];
+        if (actual != expected[i]) {
+            printf("Mismatch at pixel %d:\n", i);
+            printf("Expected: 0x%08X\n", expected[i]);
+            printf("Actual:   0x%08X\n", actual);
+        }
+        ASSERT(actual == expected[i]);
     }
 
     free(input_img.data);
