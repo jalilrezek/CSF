@@ -4,6 +4,9 @@
 #include "tctest.h"
 #include "imgproc.h"
 
+// declare func for grayscale func in assembly
+extern void imgproc_grayscale(struct Image *input_img, struct Image *output_img);
+
 // An expected color identified by a (non-zero) character code.
 // Used in the "Picture" data type.
 typedef struct {
@@ -102,24 +105,23 @@ void test_grayscale_single_color(TestObjs *objs);
 void test_grayscale_multiple_colors(TestObjs *objs);
 void test_composite_completely_opaque(TestObjs *objs);
 void test_composite_full_transparency(TestObjs *objs);
-<<<<<<< HEAD
+
 
 void test_to2D(TestObjs *objs);
 void test_backTo1D(TestObjs *objs);
 void test_makeSubPic(TestObjs *objs);
 void test_PasteImage(TestObjs *objs);
 
+void test_grayscale_assembly(TestObjs *objs);
 
 
-=======
+
 void test_to2D(TestObjs *objs);
->>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
 void test_mirror_h_2x2(TestObjs *objs);
 void test_mirror_h_symmetrical(TestObjs *objs);
 void test_mirror_h_with_single_column(TestObjs *objs);
 void test_mirror_h_3x3(TestObjs *objs);
 void test_mirror_h_4x4(TestObjs *objs);
-<<<<<<< HEAD
 void our_mirror_v_test(TestObjs *objs);
 void test_mirror_v_symmetrical(TestObjs *objs);
 void test_mirror_v_with_single_row(TestObjs *objs);
@@ -127,7 +129,7 @@ void test_mirror_v_4x4(TestObjs *objs);
 void test_mirror_v_3x3(TestObjs *objs);
 
 
-=======
+
 void test_mirror_v_basic_2(TestObjs *objs);
 void test_mirror_v_with_single_row(TestObjs *objs);
 void test_mirror_v_4x4(TestObjs *objs);
@@ -135,7 +137,6 @@ void test_mirror_v_3x3(TestObjs *objs);
 void test_tile_2x2(TestObjs *objs);
 void test_tile_3x3(TestObjs *objs);
 void test_tile_out_of_bounds_n_fails(TestObjs *objs);
->>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
 
 int main( int argc, char **argv ) {
   // allow the specific test to execute to be specified as the
@@ -148,7 +149,6 @@ int main( int argc, char **argv ) {
   // Run tests.
   // Make sure you add additional TEST() macro invocations
   // for any additional test functions you add.
-<<<<<<< HEAD
   //TEST( test_mirror_h_basic );
   //TEST( test_mirror_v_basic );
   //TEST( test_tile_basic );
@@ -177,7 +177,7 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_v_with_single_row);
   TEST(test_mirror_v_4x4);
   TEST(test_mirror_v_3x3);*/
-=======
+
   TEST( test_mirror_h_basic );
   TEST( test_mirror_v_basic );
   TEST( test_tile_basic );
@@ -197,7 +197,7 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_v_4x4);
   TEST(test_mirror_v_3x3);
   TEST(test_tile_out_of_bounds_n_fails);
->>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
+  TEST(test_grayscale_assembly);
   TEST_FINI();
 }
 
@@ -1028,6 +1028,44 @@ void test_PasteImage(TestObjs *objs) {
     destroy_img(result_img);
 
 }
+
+// simple test for asm func
+void test_grayscale_assembly(TestObjs *objs) {
+    // set up 2x2 img
+    struct Image input_img;
+    input_img.width = 2;
+    input_img.height = 2;
+    input_img.data = (uint32_t*)malloc(4 * sizeof(uint32_t));
+    input_img.data[0] = 0xFF0000FF;  // r
+    input_img.data[1] = 0x00FF00FF;  // g
+    input_img.data[2] = 0x0000FFFF;  // b
+    input_img.data[3] = 0xFFFFFFFF;  // w
+
+    struct Image output_img;
+    img_init(&output_img, input_img.width, input_img.height);
+
+    // call assembly function
+    imgproc_grayscale(&input_img, &output_img);
+
+    // what we should get
+    uint32_t expected[4] = {
+        0x4E4E4EFF, // gr 
+        0x7F7F7FFF, // gg
+        0x303030FF, // gb
+        0xB0B0B0FF  // gc
+    };
+
+    // check if everything matches
+    for (int i = 0; i < 4; ++i) {
+        ASSERT(output_img.data[i] == expected[i]);
+    }
+
+    free(input_img.data);
+    img_cleanup(&output_img);
+}
+
+
+
 
 
 
