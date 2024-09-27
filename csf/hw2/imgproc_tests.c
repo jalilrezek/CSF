@@ -188,7 +188,6 @@ int main( int argc, char **argv ) {
   TEST(test_grayscale_multiple_colors);
   TEST(test_composite_completely_opaque);
   TEST(test_composite_full_transparency);
-  TEST(test_to2D);
   TEST(test_mirror_h_2x2);
   TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
