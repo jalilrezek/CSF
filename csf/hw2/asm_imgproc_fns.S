@@ -89,8 +89,8 @@ imgproc_grayscale:
 	pushq %rbp # save base ptr onto the stack 
 	movq %rsp, %rbp # set base ptr to the same value as stack ptr
 
-	movq 8(%rdi), %r12 # width of input img into r12 (stored in Image struct with an offset of 8)
-	movq 12(%rdi), %r13 # height of input img into r13 (stored in Image struct with an offset of 12)
+	movq 0(%rdi), %r12 # width of input img into r12 (width offset is 0)
+	movq 4(%rdi), %r13 # height of input img into r13 (height offset is 4)
 
 	movq $0, %r10 # initialize pixel index to 0 so we can iterate over the pixels
 
@@ -102,7 +102,7 @@ grayscale_loop:
 	jge grayscale_done # exit loop if r10 is greater than or equal to rcx
 
 	# load 32bit pixel val from 'input_img->data[r10]'
-	movl 16(%rdi, %r10, 4), %eax # start of the data array is rdi+16
+	movl 8(%rdi, %r10, 4), %eax # start of the data array is rdi+8
 
 	movzbl %al, %ebx # move pixel alpha to ebx to preserve it (least significant byte)
 	movzbl %ah, %ecx # move pixel blue to ecx (2nd byte)
@@ -131,7 +131,7 @@ grayscale_loop:
 	shll $8, %eax # shift this 'total' to the left by 8bits
 	orl %edi, %eax # add original alpha value from edi to eax
 
-	movl %eax, 16(%rsi, %r10, 4) # store 32bit grayscale pixel in 'output_img->data[r10]'
+	movl %eax, 8(%rsi, %r10, 4) # store 32bit grayscale pixel in 'output_img->data[r10]'
 
 	incq %r10 # increment r10
 	jmp grayscale_loop # jump back to the top of the loop for next pixel
