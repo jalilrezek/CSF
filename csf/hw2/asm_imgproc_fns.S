@@ -103,13 +103,23 @@ grayscale_loop:
 	# load 32bit pixel val from 'input_img->data[r10]'
 	movl 8(%rdi, %r10, 4), %eax # start of the data array is rdi+8
 
+	/*
 	movzbl %al, %ebx # move pixel alpha to ebx to preserve it (least significant byte)
 	movzbl %ah, %ecx # move pixel blue to ecx (2nd byte)
 	shrq $16, %rax # shift rax to the right by 16bits (bring green to lowest byte)
 	movzbl %al, %edx # move pixel green into edx (3rd byte)
 	shrq $8, %rax # shift rax to the right by 8bits (bring red to lowest byte)
 	movzbl %al, %eax # move pixel red into eax (4th byte)
+	*/
 
+	movzbl %al, %edi          # red
+    	movzbl %ah, %edx          # green
+    	shrq $16, %rax            # shift right for blue
+    	movzbl %al, %ecx          # blue
+    	shrq $8, %rax             # shift right for alpha
+    	movzbl %al, %ebx          # alpha
+
+	/*
 	# for grayscale: y = (79 * r + 128 * g + 49 * b) / 256
 	movl $79, %edi # load 79 into edi for red
 	imull %eax, %edi # multiply R by 79, store in edi again 
@@ -119,10 +129,22 @@ grayscale_loop:
 	movl $49, %eax # load 49 into eax for blue
 	imull %ecx, %eax # multiply B by 49, store in eax again
 	addl %eax, %edi # current total + (49 * b), store in edi
+	*/
+
+	movl $79, %eax            
+    	imull %edi, %eax          # %eax = 79 * Red
+    	movl $128, %edi           
+    	imull %edx, %edi          # %edi = 128 * Green
+    	addl %edi, %eax           # %eax = 79 * Red + 128 * Green
+    	movl $49, %edi            
+    	imull %ecx, %edi          # %edi = 49 * Blue
+    	addl %edi, %eax           # %eax = 79 * Red + 128 * Green + 49 * Blue
 
 	# changed from rdi to edi (don't overwrite rdi)
-	shrl $8, %edi # shift to the right by 8bits to divide by 256, store grayscale in edi
+	# changed again from edi to eax (fixing rbg logic)
+	shrl $8, %eax # shift to the right by 8bits to divide by 256, store grayscale in edi
 
+	/*
 	movzbl %bl, %eax # move alpha from ebx to eax
 	shll $8, %eax # shift alpha to the left by 8bits
 	orl %edi, %eax # combine grayscale value into pixel
@@ -130,8 +152,13 @@ grayscale_loop:
 	orl %edi, %eax # copy grayscale value to blue
 	shll $8, %eax # shift this 'total' to the left by 8bits
 	orl %edi, %eax # add original alpha value from edi to eax
+	*/
 
-	movl %eax, 8(%rsi, %r10, 4) # store 32bit grayscale pixel in 'output_img->data[r10]'
+	shll $8, %ebx # shift alpha
+	orl %eax, %ebx # combine grayscale w alpha then put into ebx
+
+	# changed from eax to ebx
+	movl %ebx, 8(%rsi, %r10, 4) # store 32bit grayscale pixel in 'output_img->data[r10]'
 
 	incq %r10 # increment r10
 	jmp grayscale_loop # jump back to the top of the loop for next pixel
