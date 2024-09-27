@@ -102,7 +102,7 @@ grayscale_loop:
 	jge grayscale_done # exit loop if r10 is greater than or equal to rcx
 
 	# load 32bit pixel val from 'input_img->data[r10]'
-	movl 8(%rdi, %r10, 4), %eax # start of the data array is rdi+8
+	movl 8(%rdi, %r10, 2), %eax # start of the data array is rdi+8
 
 	movzbl %al, %ebx # move pixel alpha to ebx to preserve it (least significant byte)
 	movzbl %ah, %ecx # move pixel blue to ecx (2nd byte)
