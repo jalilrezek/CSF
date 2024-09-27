@@ -540,10 +540,6 @@ void test_composite_completely_opaque(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
-<<<<<<< HEAD
-
-=======
-
 //Function prototype for to2D (needs to be fixed)
 
 void test_to2D(TestObjs * objs) {
@@ -584,7 +580,6 @@ void test_to2D(TestObjs * objs) {
     printf("test_to2D passed.\n");
 }
 
->>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
 
 // my tests for mirror horizontal function 
 void test_mirror_h_2x2(TestObjs *objs) {
@@ -687,11 +682,7 @@ void test_mirror_h_3x3(TestObjs *objs) {
 }
 
 // my tests for mirror vertical function 
-<<<<<<< HEAD
-void our_mirror_v_test(TestObjs *objs) {
-=======
 void test_mirror_v_basic_2(TestObjs *objs) {
->>>>>>> 31e2f03a9765c7fbf4313856865106a958267347
     // 2x2 image
     Picture pic = {
         TEST_COLORS,
