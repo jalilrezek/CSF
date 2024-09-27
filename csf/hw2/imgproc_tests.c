@@ -106,11 +106,11 @@ void test_grayscale_multiple_colors(TestObjs *objs);
 void test_composite_completely_opaque(TestObjs *objs);
 void test_composite_full_transparency(TestObjs *objs);
 
-
-void test_to2D(TestObjs *objs);
-void test_backTo1D(TestObjs *objs);
-void test_makeSubPic(TestObjs *objs);
-void test_PasteImage(TestObjs *objs);
+// commenting these out for testing assembly functions
+// void test_to2D(TestObjs *objs);
+// void test_backTo1D(TestObjs *objs);
+// void test_makeSubPic(TestObjs *objs);
+// void test_PasteImage(TestObjs *objs);
 
 void test_grayscale_assembly(TestObjs *objs);
 
@@ -816,7 +816,7 @@ void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
 }
 
 
-
+/*
 // tests for Jalil helper functions
 
 
@@ -1021,6 +1021,7 @@ void test_PasteImage(TestObjs *objs) {
     destroy_img(result_img);
 
 }
+*/
 
 // simple test for asm func
 void test_grayscale_assembly(TestObjs *objs) {
