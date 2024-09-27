@@ -161,10 +161,11 @@ int main( int argc, char **argv ) {
   //TEST(test_composite_completely_opaque);
   //TEST(test_composite_full_transparency);
 
-  TEST(test_to2D);
-  TEST(test_backTo1D);
-  TEST(test_makeSubPic);
-  TEST(test_PasteImage);
+  // commenting these out for testing assembly functions
+  // TEST(test_to2D);
+  // TEST(test_backTo1D);
+  // TEST(test_makeSubPic);
+  // TEST(test_PasteImage);
 
 
   /*TEST(test_mirror_h_2x2);
