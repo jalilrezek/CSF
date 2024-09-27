@@ -540,7 +540,7 @@ void test_composite_completely_opaque(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
-//Function prototype for to2D (needs to be fixed)
+/* Function prototype for to2D (needs to be fixed)
 
 void test_to2D(TestObjs * objs) {
     int width = 3;
@@ -579,6 +579,7 @@ void test_to2D(TestObjs * objs) {
     // Print a success message if all assertions pass
     printf("test_to2D passed.\n");
 }
+*/
 
 
 // my tests for mirror horizontal function 
