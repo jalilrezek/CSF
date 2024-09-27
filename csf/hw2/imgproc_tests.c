@@ -443,9 +443,18 @@ void test_grayscale_single_color(TestObjs *objs) {
     img_init(&output_img, red_img->width, red_img->height);
     imgproc_grayscale(red_img, &output_img);
 
+    uint32_t expected = 0x4E4E4EFF;
+
     // grayscale value of red is 0x4E4E4EFF
     for (int i = 0; i < output_img.width * output_img.height; ++i) {
-        ASSERT(output_img.data[i] == 0x4E4E4EFF);
+        uint32_t actual = output_img.data[i];
+        if (actual != expected) {
+            printf("Mismatch at pixel %d:\n", i);
+            printf("  Expected: 0x%08X\n", expected);
+            printf("  Actual:   0x%08X\n", actual);
+        }
+
+        ASSERT(actual == expected);
     }
 
     destroy_img(red_img);
