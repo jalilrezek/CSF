@@ -66,17 +66,13 @@ imgproc_mirror_h:
 		jge .LOuterLoopDone
 
 		.LInnerLoop:
-			# Load the value from the stack into a temporary register (e.g., rax). 
-			# Goal here: compare (%edi), %r11d
-			movl -8(%rbp), %eax        # Load the value at -8(%rbp) into rax (or use any other register)
-
-			# Now, can perform the comparison
-			cmpl %eax, %r11d          # Compare the value in r11d with the value now in eax
+			
+			cmpl (%edi), %r11d			
 			jge .LInnerLoopDone
 
 			/*INITIAL CALCULATION FOR SOURCE INDEX*/
 
-			movq -8(%rbp), %rdx /* rdx gets the width, to be used in the [i][j] = col + (width * row) calculation*/
+			movq (%rdi), %rdx /* rdx gets the width, to be used in the [i][j] = col + (width * row) calculation*/
 			/*BUG FIX: Changed %edi to (%edi) (before it was loading like 400,000 into edx)*/
 			imul %r10d, %edx /* rdx gets (rdx * r10d) i.e. rdx = width * row. Use just lower 32 bits.*/
 			/*r10d cannot be dereferenced. Multiply the literal value.*/
@@ -101,8 +97,7 @@ imgproc_mirror_h:
 			; A literal value so no need to add.
 			; QUESTION: should this be just the lower 32 bits?
 			After this, rcx is 2. Is that right?*/
-			movl -8(%rbp), %eax
-			imul (%eax), %r8d /* r8 now has (outer loop counter * width). Just used lower 32 bits. Not sure if right.
+			imul (%edi), %r8d /* r8 now has (outer loop counter * width). Just used lower 32 bits. Not sure if right.
 			; dereferenced edi (lower 32 of rdi) to get the literal width value.
 			After this, %r8d is 0 - correct, I think. */
 			addl %r8d, %ecx /* rcx now has the output img index, (curRow * width + (width - curCol))
@@ -119,8 +114,6 @@ imgproc_mirror_h:
 
 			imul $4, %edx /* multiply by size of uint32_t*/
 
-			/*movl -8(%rbp, %eax) 
-			#movl IMAGE_DATA_OFFSET(%rax), %r8d*/
 
 			mov IMAGE_DATA_OFFSET(%rdi), %r8 /*access "data" field of output - a memory address. 
 			r8d contains the address of the first pixel now. (the address - not the value) */
