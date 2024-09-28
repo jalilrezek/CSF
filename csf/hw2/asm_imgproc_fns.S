@@ -184,7 +184,7 @@ grayscale_loop:
 
     movl %edi, (%r9) # output_img->data[i] = new pixel
 
-    incl %rax # increment
+    incq %rax # increment
     jmp grayscale_loop # Repeat loop
 
 grayscale_done:
