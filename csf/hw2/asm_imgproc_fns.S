@@ -46,8 +46,13 @@ imgproc_mirror_h:
 	; so push all 64 bits (pushq) even if only using bottom 32 (movl)*/
 	movq %rdi, -8(%rbp) /*Local variable to hold val of rdi for malloc*/
 
-	movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d; /*r12 will hold the VALUE (not mem address) of the height*/
+	/*movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d; /*r12 will hold the VALUE (not mem address) of the height*/
 	/*at this point, p $r12d = 2 for 2x2 image (correct) */
+	/*Replace height assignment:*/
+	movl IMAGE_HEIGHT_OFFSET(%rdi), %eax      # Load the height value into eax
+	movl %eax, -8(%rsp)                        # Store the value from eax into the local variable at -8(%rsp)
+	movq %rdi, %r12
+
 
 	/* DYNAMIC ALLOCATION BEGIN: Calculate the size needed for the output image data */
 	/*movl IMAGE_WIDTH_OFFSET(%rdi), %eax     /* Get width */
@@ -62,17 +67,17 @@ imgproc_mirror_h:
 
 
 	.LOuterLoop:
-		cmpl %r12d, %r10d /* if the outer loop counter r10d >= r12d = height, jump out.*/
+		cmpl -8(%rsp), %r10d /* if the outer loop counter r10d >= r12d = height, jump out.*/
 		jge .LOuterLoopDone
 
 		.LInnerLoop:
 			
-			cmpl (%edi), %r11d			
+			cmpl (%r12d), %r11d			
 			jge .LInnerLoopDone
 
 			/*INITIAL CALCULATION FOR SOURCE INDEX*/
 
-			movq (%rdi), %rdx /* rdx gets the width, to be used in the [i][j] = col + (width * row) calculation*/
+			movq (%r12), %rdx /* rdx gets the width, to be used in the [i][j] = col + (width * row) calculation*/
 			/*BUG FIX: Changed %edi to (%edi) (before it was loading like 400,000 into edx)*/
 			imul %r10d, %edx /* rdx gets (rdx * r10d) i.e. rdx = width * row. Use just lower 32 bits.*/
 			/*r10d cannot be dereferenced. Multiply the literal value.*/
@@ -97,7 +102,7 @@ imgproc_mirror_h:
 			; A literal value so no need to add.
 			; QUESTION: should this be just the lower 32 bits?
 			After this, rcx is 2. Is that right?*/
-			imul (%edi), %r8d /* r8 now has (outer loop counter * width). Just used lower 32 bits. Not sure if right.
+			imul (%r12d), %r8d /* r8 now has (outer loop counter * width). Just used lower 32 bits. Not sure if right.
 			; dereferenced edi (lower 32 of rdi) to get the literal width value.
 			After this, %r8d is 0 - correct, I think. */
 			addl %r8d, %ecx /* rcx now has the output img index, (curRow * width + (width - curCol))
@@ -115,7 +120,7 @@ imgproc_mirror_h:
 			imul $4, %edx /* multiply by size of uint32_t*/
 
 
-			mov IMAGE_DATA_OFFSET(%rdi), %r8 /*access "data" field of output - a memory address. 
+			mov IMAGE_DATA_OFFSET(%r12), %r8 /*access "data" field of output - a memory address. 
 			r8d contains the address of the first pixel now. (the address - not the value) */
 
 			addl %r8d, %edx /*to get address of current pixel, add offset factor (edx) to address of first pixel
