@@ -44,13 +44,13 @@ imgproc_mirror_h:
 	/*PUSH CALLEE SAVED/LOCAL VARS*/
 	pushq %r12 /*height. rdi has the width... NEED IT BE r12d? NO - stack is designed to push & pop 8 bytes at a time.
 	; so push all 64 bits (pushq) even if only using bottom 32 (movl)*/
-	movq %rdi, -8(%rbp) /*Local variable to hold val of rdi for malloc*/
+	/*movq %rdi, -8(%rbp) /*Local variable to hold val of rdi for malloc should be commented out I think. */
 
 	/*movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d; /*r12 will hold the VALUE (not mem address) of the height*/
 	/*at this point, p $r12d = 2 for 2x2 image (correct) */
 	/*Replace height assignment:*/
 	movl IMAGE_HEIGHT_OFFSET(%rdi), %eax      # Load the height value into eax
-	movl %eax, -8(%rsp)                        # Store the value from eax into the local variable at -8(%rsp)
+	movl %eax, -8(%rbp)                        # Store the value from eax into the local variable at -8(%rbp)
 	movq %rdi, %r12
 
 
@@ -58,6 +58,16 @@ imgproc_mirror_h:
 	/*movl IMAGE_WIDTH_OFFSET(%rdi), %eax     /* Get width */
 	/*mull IMAGE_HEIGHT_OFFSET(%rdi)           /* Multiply by height */
 	/*imul $4, %eax                             /* Multiply by 4 (size of uint32_t) */
+	
+
+	/*movq rax, rdi       # Move the calculated size into rdi (malloc argument)
+
+	/*call malloc          # Call malloc
+
+	# After the call, the pointer to the allocated memory is now in rax
+	/*movq rax, IMAGE_DATA_OFFSET(%r12)  # Store the pointer to the allocated data in the struct
+	/*doesn't this just mean the input pointer points somewhere else so we can't get hte original image's data*/
+
  
 
 	/*REST OF FUNCTION BEGIN*/
@@ -67,7 +77,7 @@ imgproc_mirror_h:
 
 
 	.LOuterLoop:
-		cmpl -8(%rsp), %r10d /* if the outer loop counter r10d >= r12d = height, jump out.*/
+		cmpl -8(%rbp), %r10d /* if the outer loop counter r10d >= r12d = height, jump out.*/
 		jge .LOuterLoopDone
 
 		.LInnerLoop:
@@ -195,7 +205,141 @@ imgproc_mirror_h:
  */
 	.globl imgproc_mirror_v
 imgproc_mirror_v:
+/*NOTES: Must use 32-bit versions of the registers if I'm only operating on 32 bits of them.*/
 	/* TODO: implement */
+	pushq %rbp /* -8 from rsp. Aligned at this point.*/
+	movq %rsp, %rbp
+	subq $8, %rsp; /*1 local var: height (r12d). rsp will be shifted down by 8. Was aligned from above. 
+	; so shift down by another 8, so that after adding the local var, it's aligned to mult of 16 again.
+	; so right now it's misaligned but this is anticipating the local var push, after which will be aligned.
+	; EDIT: Actually, shift by 16 to leave space at (rbp - 8?) for another local var. */
+
+	/*PUSH CALLEE SAVED/LOCAL VARS*/
+	pushq %r12 /*height. rdi has the width... NEED IT BE r12d? NO - stack is designed to push & pop 8 bytes at a time.
+	; so push all 64 bits (pushq) even if only using bottom 32 (movl)*/
+
+	/*movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d; /*r12 will hold the VALUE (not mem address) of the height*/
+	/*at this point, p $r12d = 2 for 2x2 image (correct) */
+
+	/*Replace height assignment:*/
+	/*movl IMAGE_HEIGHT_OFFSET(%rdi), %eax      # Load the height value into eax
+	movl %eax, -8(%rbp)                        # Store the value from eax into the local variable at -8(%rsp)
+	movq %rdi, %r12*/
+	movl IMAGE_HEIGHT_OFFSET(%edi), %r12d; /*r12 will hold the VALUE (not mem address) of the height*/
+
+ 
+
+	/*REST OF FUNCTION BEGIN*/
+	movl $0, %r10d /*outer loop counter. Use caller saved. No need to reserve more space on stack. "d" for just 32 bits.*/
+	movl $0, %r11d /*inner loop counter. Caller-saved*/
+	/*at this point, r10d and r11d contain 0 (correct) */
+
+
+	.LOuterLoopV:
+		cmpl %r12d, %r10d /* if the outer loop counter r10d >= r12d = height, jump out.*/
+		jge .LOuterLoopDoneV
+
+		.LInnerLoopV:
+			
+			cmpl (%edi), %r11d			
+			jge .LInnerLoopDoneV
+
+			/*INITIAL CALCULATION FOR SOURCE INDEX*/
+
+			movl (%edi), %edx /* rdx gets the width, to be used in the [i][j] = col + (width * row) calculation*/
+			/*BUG FIX: Changed %edi to (%edi) (before it was loading like 400,000 into edx)*/
+			imul %r10d, %edx /* rdx gets (rdx * r10d) i.e. rdx = width * row. Use just lower 32 bits.*/
+			/*r10d cannot be dereferenced. Multiply the literal value.*/
+
+			addl %r11d, %edx /* rdx is now (width * row) + col, since r11d has the current col
+			 this should be addl %r11d, %edx to use just the 32-bit versions!
+			 I don't think I need to do any -1 here because curCol starts from 0 already, going left to right.
+			 Up to this point, edx is 0 for the first loop iter - correct (for input image) */
+
+
+
+			/*INITIAL CALCULATION FOR DEST INDEX*/
+
+			/* width(height - 1) - (width * row) + col
+			NOTE row = outer loop counter; col = inner loop counter*/
+			movq (%rsi), %rcx/* rcx will be index of output img. load width (the value) into rcx 
+			rcx = 0x200000002 but ecx = 0x2. Fine?*/ 
+
+			movl %r12d,%r8d /*r8d will get (height - 1)*/
+			dec %r8d /*r8d has (height - 1)
+			r8d = 1 3rd iter of 2x2. Good I think.*/
+			
+			imul %r8d, %ecx /*ecx now has width * (height - 1)
+			p $ecx = 2 3rd iter of 2x2. Good I think.*/
+
+			movl (%edi), %r8d /*r8 has the width
+			DEBUGGING: Changed %edi to (%edi)*/
+			imul %r10d, %r8d /*r8 now has width * row*/
+
+			subl %r8d, %ecx /*ecx now has widh * (height - 1) - (width * row)*/
+
+			addl %r11d, %ecx /*ecx now has width * (height - 1) - (width * row) + col*/
+			/*inc %ecx /*ecx now has width * (height - 1) - (width * row) + col + 1
+			Not sure if the last + 1 is needed...*/
+
+
+			/*BEGINNING OF FINISHING CALCULATION FOR SOURCE INDEX*/
+
+			imul $4, %edx /* multiply by size of uint32_t*/
+
+
+			mov IMAGE_DATA_OFFSET(%rdi), %r8 /*access "data" field of output - a memory address. 
+			r8d contains the address of the first pixel now. (the address - not the value) */
+
+			addl %r8d, %edx /*to get address of current pixel, add offset factor (edx) to address of first pixel
+			edx = memory address of current source pixel*/
+
+
+			/*BEGINNING OF FINISHING CALCULATION FOR DEST INDEX*/
+			imul $4, %ecx /* multiply by size of uint32_t*/
+			/*GDB: After this, p $ecx = 4
+			x/x $ecx fails: It is simply an address, not a value.*/
+			movl IMAGE_DATA_OFFSET(%rsi), %r8d /* access the "data" field of output - this should be a mem address. 
+			r8d should now have a mem address in it*/
+
+			addl %r8d, %ecx /*ecx should now have the mem address value, plus the calculated offset.*/
+
+
+			/*END OF CALCULATION FOR DEST INDEX*/
+
+			/*GDB: After the above line, esi which should just be last 32 bits of rsi, is negative, but rsi is positive.
+
+			CURRENT INPUT PIXEL: rdx ---- goes left to right
+			CURRENT OUTPUT PIXEL: rcx ----- goes right to left
+
+			*/
+			movl (%rdx), %r9d      /* Load the 32-bit pixel data into r9d */
+			movl %r9d, (%rcx)      /* Store the 32-bit value from r9d into the memory address in rcx */
+			/*after one loop iter, x/x 8($rsi) + 8 (location of cur output pixel, the 3rd output pixel) correctly has
+			val of first input pixel*/
+			/*after two loop iter, looks like bottom row was mapped correctly: 
+				gdb) x/x 0x0040c330 + 12
+				0x40c33c:       0x00ff00ff
+				(gdb) x/x 0x0040c330 + 8
+				0x40c338:       0xff0000ff
+				(gdb) */
+
+
+
+			inc %r11d /*increment inner loop counter*/
+			jmp .LInnerLoopV /*next inner loop iter*/
+			
+
+		.LInnerLoopDoneV:
+		inc %r10d /*increment outer loop counter*/
+		movq $0, %r11 /*reset inner loop counter*/
+		jmp .LOuterLoopV /* next outer loop iter*/
+
+	.LOuterLoopDoneV:
+    /* epilogue.*/
+	popq %r12  /*pop callee-saved registers (local vars)*/
+	addq $8, %rsp
+	popq %rbp
 	ret
 
 /*

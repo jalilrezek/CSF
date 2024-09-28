@@ -195,16 +195,16 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_h_with_single_column);
   TEST(test_mirror_h_3x3);
   //TEST(test_mirror_h_4x4);
- /* TEST(our_mirror_v_test);
-  TEST(test_mirror_v_symmetrical);
-  TEST(test_mirror_v_with_single_row);
-  TEST(test_mirror_v_4x4);
-  TEST(test_mirror_v_3x3);*/
+  //TEST(our_mirror_v_test);
+  //TEST(test_mirror_v_symmetrical);
+  //TEST(test_mirror_v_with_single_row);
+  //TEST(test_mirror_v_4x4);
+  //TEST(test_mirror_v_3x3);
 
-  /*TEST( test_mirror_h_basic );
-  TEST( test_mirror_h_basic );
-  TEST( test_mirror_v_basic );
-  TEST( test_tile_basic );
+  //TEST( test_mirror_h_basic );
+  //TEST( test_mirror_h_basic );
+  //TEST( test_mirror_v_basic );
+  /*TEST( test_tile_basic );
   TEST( test_grayscale_basic );
   TEST( test_composite_basic );
   TEST(test_grayscale_single_color);
@@ -214,12 +214,12 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_h_2x2);
   TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
-  TEST(test_mirror_h_3x3);
+  TEST(test_mirror_h_3x3);*/
   TEST(test_mirror_v_basic_2);
   TEST(test_mirror_v_with_single_row);
-  TEST(test_mirror_v_4x4);
+  //TEST(test_mirror_v_4x4);
   TEST(test_mirror_v_3x3);
-  TEST(test_tile_out_of_bounds_n_fails);*/
+  /*TEST(test_tile_out_of_bounds_n_fails);*/
   //TEST(test_tile_out_of_bounds_n_fails);
   //TEST(test_grayscale_assembly);
   TEST_FINI();
