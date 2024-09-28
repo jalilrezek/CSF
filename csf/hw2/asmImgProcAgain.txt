@@ -56,8 +56,11 @@ imgproc_mirror_h:
 		jge .LOuterLoopDone
 
 		.LInnerLoop:
-			cmpl %edi, %r11d /*if inner loop counter r11d >= rdi = width. edi lower 32 bits of rdi*/
+			cmpl %edi, %r11d /*if inner loop counter r11d >= rdi = width. edi lower 32 bits of rdi
+			0-based indexing. Continue only while strictly less than. Should be good. */
 			jge .LInnerLoopDone
+
+			/*INITIAL CALCULATION FOR SOURCE INDEX*/
 
 			movl (%edi), %edx /* rdx gets the width, to be used in the [i][j] = col + (width * row) calculation*/
 			/*BUG FIX: Changed %edi to (%edi) (before it was loading like 400,000 into edx)*/
@@ -66,38 +69,48 @@ imgproc_mirror_h:
 
 			addl %r11d, %edx /* rdx is now (width * row) + col, since r11d has the current col
 			 this should be addl %r11d, %edx to use just the 32-bit versions!
-			 I don't think I need to do any -1 here because curCol starts from 0 already, going left to right. */
+			 I don't think I need to do any -1 here because curCol starts from 0 already, going left to right.
+			 Up to this point, edx is 0 for the first loop iter - correct (for input image) */
 
-
+			/*INITIAL CALCULATION FOR DEST INDEX*/
 
 			/* outer loop counter * width + (width - curCol)*/
-			movl (%edi), %ecx/* rcx will be index of output img. load width (the value) into rcx*/
+			movl (%esi), %ecx/* rcx will be index of output img. load width (the value) into rcx
+			ecx is 2 after this (first loop iter)
+			This used to be edi. I think it should be esi. */
 			subl %r11d, %ecx /*rcx now has (width - curCol) note curCol = inner loop counter. It is a literal value
-			; so no need to dereference r11d*/
+			; so no need to dereference r11d
+			after this, rcx is 2. Is that right? */
 
 			movl %r10d, %r8d /* r8 will have (outer loop counter * width) to add to rcx. Currently has outer loop counter.
 			; A literal value so no need to add.
-			; QUESTION: should this be just the lower 32 bits?*/
+			; QUESTION: should this be just the lower 32 bits?
+			After this, rcx is 2. Is that right?*/
 			imul (%edi), %r8d /* r8 now has (outer loop counter * width). Just used lower 32 bits. Not sure if right.
-			; dereferenced edi (lower 32 of rdi) to get the literal width value.*/
+			; dereferenced edi (lower 32 of rdi) to get the literal width value.
+			After this, %r8d is 0 - correct, I think. */
 			addl %r8d, %ecx /* rcx now has the output img index, (curRow * width + (width - curCol))
 			; where curRow = outer loop counter, curCol = inner loop counter
-			; using just the lower 32 bits.*/
+			; using just the lower 32 bits. */
 			/*for 2x2 image, ecx was 2 at this point*/
-			dec %r8d /*needs to be (curRow * width + (width - curCol - 1) because of 0-based indexing
-			it starts at width and goes from right to left, so need the -1 there I think. */
+
+			dec %ecx /*needs to be (curRow * width + (width - curCol - 1) because of 0-based indexing
+			it starts at width and goes from right to left, so need the -1 there I think. 
+			used to be r8d, I think should be ecx
+			ecx = 1 after this*/
+
+			/*FINISH CALCULATION FOR SOURCE INDEX*/
 
 			imul $4, %edx /* multiply by size of uint32_t*/
 			addl $IMAGE_DATA_OFFSET, %edx /* add image_data_offset to get total offset from rdi to current pixel of input
 			After this, to get to the address of current pixel, just do rdi +edx*/
 			/*GDB: for 2x2 image, edx was 8 at this point*/
 
-			/*leaq (%edx)(%edi), %edx /* edx goes from being the offset, to being (base address of input struct) + offset.
-			 so basically edx becomes the actual mem address of the current source pixel.*/
-
 			/*DEBUGGING QUESTION: What were edi, edx before this leal?
 			$edx was 8
+			$ecx was 1 (i think)
 			*/
+
 			leaq (%rdi, %rdx, 1), %rdx /* edx = edi + (edx * 1) 
 			Purpose: get to addres of current pixel by doing rdi + edx*/
 			/*GDB:  (gdb) x/x $edi
@@ -106,26 +119,33 @@ imgproc_mirror_h:
 					 0x40b048:       0x0040b060
 				    (gdb)   
 			GDB: on first iter, edx is 8 more than edi. Should be right: edi is base of image, edx is first pixel 8 away
-			in GDB, x/x $edx = x/x $rdi + 8 = x/x $edi + 8*/
+			in GDB, x/x $edx = x/x $rdi + 8 = x/x $edi + 8
+			Plus, dereferencing 0x0040b060 yields the desired 0xff0000ff pixel val*/
 
 
-
+			/*FINISH CALCULATION FOR DEST INDEX*/
 			imul $4, %ecx /* multiply by size of uint32_t*/
-			/*GDB: After this, p $ecx = 8
+			/*GDB: After this, p $ecx = 4
 			x/x $ecx fails: It is simply an address, not a value.*/
-			addl $IMAGE_DATA_OFFSET, %ecx /* add image_data_offset to get total offset from rsi to current pixel of output*/
-			/*After this, p $ecx = 16*/
+			movl IMAGE_DATA_OFFSET(%rsi), %r8d /* access the "data" field of output - this should be a mem address. 
+			r8d should now have a mem address in it*/
 
-			/*leaq (%ecx)(%esi), %ecx /* ecx goes from being the offset, to being (base address of output struct) + offset.
-			; so basically after line below, ecx becomes the actual mem address of the current output pixel.*/
+			addl $r8d, $ecx /*ecx should now have the mem address value, plus the calculated offset.*/
 
-			leaq (%rsi, %rcx, 1), %rcx /* ecx = esi + (ecx * 1)  the idea is for rcx to be the actual mem address of 
+
+			/*addl $IMAGE_DATA_OFFSET, %ecx /* add image_data_offset to get total offset from rsi to current pixel of output*/
+			/*After this, p $ecx = 12*/
+
+
+			/*leaq (%rsi, %rcx, 1), %rcx /* ecx = esi + (ecx * 1)  the idea is for rcx to be the actual mem address of 
 			the current output pixel */
+
+			/*END CALCULATION FOR DEST INDEX*/
 
 			/*GDB: After the above line, esi which should just be last 32 bits of rsi, is negative, but rsi is positive.
 
-			CURRENT INPUT PIXEL: rdx
-			CURRENT OUTPUT PIXEL: rcx
+			CURRENT INPUT PIXEL: rdx ---- goes left to right
+			CURRENT OUTPUT PIXEL: rcx ----- goes right to left
 
 			*/
 			movl (%edx), %r9d      /* Step 1: Load the address of pixel data into r9d */
@@ -203,7 +223,153 @@ imgproc_tile:
 	.globl imgproc_grayscale
 imgproc_grayscale:
 	/* TODO: implement */
-	ret
+    # prologue
+    pushq %rbp # old base ptr
+    movq %rsp, %rbp # new base ptr
+
+    # save registers to use
+    pushq %rbx                
+    pushq %r12               
+    pushq %r13                
+    pushq %r14                
+    pushq %r15
+
+    subq $8, %rsp # have to adjust stack before calling malloc
+
+    movq %rdi, %r14 # %r14 = input_img ptr
+    movq %rsi, %r15 # %r15 = output_img ptr
+
+    movl IMAGE_WIDTH_OFFSET(%r14), %eax # load input_img->width into %eax
+    movl %eax, IMAGE_WIDTH_OFFSET(%r15) # store %eax to output_img->width
+    movl IMAGE_HEIGHT_OFFSET(%r14), %eax # load input_img->height into %eax
+    movl %eax, IMAGE_HEIGHT_OFFSET(%r15) # store %eax to output_img->height
+    movl IMAGE_WIDTH_OFFSET(%r14), %r12d  # %r12d = input_img->width
+    movl IMAGE_HEIGHT_OFFSET(%r14), %r13d # %r13d = input_img->height
+    movslq %r12d, %r12 # %r12 = width 64bit
+    movslq %r13d, %r13 # %r13 = height 64bit
+
+    # size = width * height * sizeof(uint32_t)
+    imulq %r13, %r12 # %r12 = width * height
+    shlq $2, %r12 # %r12 = size in bytes * 4
+
+    # allocate memory
+    movq %r12, %rdi # %rdi = size
+    call malloc # malloc(size)
+    addq $8, %rsp # restore
+    movq %rax, IMAGE_DATA_OFFSET(%r15) # store the memory to output_img->data
+
+    /*
+    # Prepare for loop over pixels
+    movl IMAGE_WIDTH_OFFSET(%r14), %r10d # %r10d = input_img->width
+    movl IMAGE_HEIGHT_OFFSET(%r14), %eax # %eax = input_img->height
+    movslq %r10d, %r10 # %r10 = width (64-bit)
+    movslq %eax, %rax # %rax = height (64-bit)
+    imulq %rax, %r10 # %r10 = total pixels (64-bit)
+    xorq %rax, %rax # %rax = i = 0 (loop counter)
+    */
+
+    movq %r12, %r10
+    shrq $2, %r10
+    xorq %rax, %rax
+
+    movq IMAGE_DATA_OFFSET(%r14), %rdx # %rdx = input_img->data
+    movq IMAGE_DATA_OFFSET(%r15), %rcx # %rcx = output_img->data
+
+# Loop over each pixel
+grayscale_loop:
+    cmpq %r10, %rax # compare i with total pixels
+    jge grayscale_done # if i is greater than or equal to total pixels, exit the loop
+
+    # get the addresses 
+    leaq (%rdx, %rax, 4), %r8 # %r8 = &input_img->data[i]
+    leaq (%rcx, %rax, 4), %r9 # %r9 = &output_img->data[i]
+
+    movl (%r8), %r11d # %r11d = pixel
+    movl %r11d, %r12d # copy to %r12d
+    andl $0xFF, %r12d # %r12d = alpha
+
+    movl %r11d, %r13d # copy to %r13d
+    shrl $8, %r13d # shift to the right by 8 bits
+    andl $0xFF, %r13d # %r13d = blue
+
+    /*
+    movl %r11d, %r14d # copy to %r14d
+    shrl $16, %r14d # shift to the right by 16 bits
+    andl $0xFF, %r14d # %r14d = green
+    */
+
+    movl %r11d, %edx                     
+    shrl $16, %edx                        
+    andl $0xFF, %edx                      
+
+    /*
+    movl %r11d, %r15d # copy to %r15d
+    shrl $24, %r15d # shift to the right by 24 bits
+    andl $0xFF, %r15d # %r15d = red
+    */
+
+    movl %r11d, %ecx                     
+    shrl $24, %ecx                        
+    andl $0xFF, %ecx                      
+
+    /*
+    # grayscale = (79*red + 128*green + 49*blue) / 256
+    movl %r15d, %ebx # %ebx = red
+    imull $79, %ebx # %ebx = 79 * red
+    movl %r14d, %edi # %edi = green
+    imull $128, %edi # %edi = 128 * green
+    addl %edi, %ebx # %ebx += 128 * green
+    movl %r13d, %edi # %edi = blue
+    imull $49, %edi # %edi = 49 * blue
+    addl %edi, %ebx # %ebx += 49 * blue
+    shrl $8, %ebx # %ebx = gray / 256
+    */
+
+    movl %ecx, %ebx # %ebx = red
+    imull $79, %ebx # %ebx = 79 * red
+    movl %edx, %edi # %edi = green
+    imull $128, %edi # %edi = 128 * green
+    addl %edi, %ebx # %ebx += 128 * green
+    movl %r13d, %edi # %edi = blue
+    imull $49, %edi # %edi = 49 * blue
+    addl %edi, %ebx # %ebx += 49 * blue
+    shrl $8, %ebx # %ebx = gray
+
+    # create the new pixel with grayscale and alpha values
+    movl %ebx, %edi # %edi = gray
+    shll $24, %edi # shift gray to r position
+
+    /*
+    movl %ebx, %ecx # %ecx = gray
+    shll $16, %ecx # shift gray to g position
+    orl %ecx, %edi # combine green into %edi
+    */
+
+    movl %ebx, %esi                      
+    shll $16, %esi                        
+    orl %esi, %edi                     
+
+    movl %ebx, %ecx # %ecx (previously edx) = gray
+    shll $8, %ecx # Shift gray to blue position (changing edx to exc)
+    orl %ecx, %edi # combine blue into %edi (edx changed to ecx)
+
+    orl %r12d, %edi # combine alpha into %edi
+
+    movl %edi, (%r9) # output_img->data[i] = new pixel
+
+    incq %rax # increment
+    jmp grayscale_loop # Repeat loop
+
+grayscale_done:
+    # restore the registers
+    popq %r15                
+    popq %r14                
+    popq %r13                
+    popq %r12                
+    popq %rbx
+
+    popq %rbp # old base ptr
+    ret
 
 /*
  * int imgproc_composite( struct Image *base_img, struct Image *overlay_img );

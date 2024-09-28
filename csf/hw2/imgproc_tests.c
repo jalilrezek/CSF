@@ -4,6 +4,9 @@
 #include "tctest.h"
 #include "imgproc.h"
 
+// declare func for grayscale func in assembly
+extern void imgproc_grayscale(struct Image *input_img, struct Image *output_img);
+
 // An expected color identified by a (non-zero) character code.
 // Used in the "Picture" data type.
 typedef struct {
@@ -110,6 +113,18 @@ void test_PasteImage(TestObjs *objs);
 
 
 
+
+// commenting these out for testing assembly functions
+// void test_to2D(TestObjs *objs);
+// void test_backTo1D(TestObjs *objs);
+// void test_makeSubPic(TestObjs *objs);
+// void test_PasteImage(TestObjs *objs);
+
+void test_grayscale_assembly(TestObjs *objs);
+
+
+
+void test_to2D(TestObjs *objs);
 void test_mirror_h_2x2(TestObjs *objs);
 void test_mirror_h_symmetrical(TestObjs *objs);
 void test_mirror_h_with_single_column(TestObjs *objs);
@@ -118,8 +133,13 @@ void test_mirror_h_3x3(TestObjs *objs);
 //void our_mirror_v_test(TestObjs *objs); // for these or something. Or maybe it was missing in Tayseer's push but that seems
 //void test_mirror_v_symmetrical(TestObjs *objs); // less likely. Idk. All I know is, when I merged the declarations were there,
 void test_mirror_v_with_single_row(TestObjs *objs); // but the actual function bodies were missing, which prevented compilation.
+void test_mirror_h_4x4(TestObjs *objs);
+void our_mirror_v_test(TestObjs *objs);
+void test_mirror_v_symmetrical(TestObjs *objs);
+void test_mirror_v_with_single_row(TestObjs *objs);
 void test_mirror_v_4x4(TestObjs *objs);
 void test_mirror_v_3x3(TestObjs *objs);
+
 
 
 void test_mirror_v_basic_2(TestObjs *objs);
@@ -141,9 +161,14 @@ int main( int argc, char **argv ) {
   // Run tests.
   // Make sure you add additional TEST() macro invocations
   // for any additional test functions you add.
+  //TEST( test_mirror_h_basic );
+  //TEST( test_mirror_v_basic );
+  //TEST( test_tile_basic );
+  //TEST( test_grayscale_basic );
+  //TEST( test_composite_basic );
 
-  /*TEST( test_mirror_h_basic );
-  TEST( test_mirror_v_basic );
+  TEST( test_mirror_h_basic );
+  /*TEST( test_mirror_v_basic );
   TEST( test_tile_basic );
   TEST( test_grayscale_basic );
   TEST( test_composite_basic );*/
@@ -158,20 +183,26 @@ int main( int argc, char **argv ) {
   //TEST(test_backTo1D);
   //TEST(test_makeSubPic);
   //TEST(test_PasteImage);*/
+  // commenting these out for testing assembly functions
+  // TEST(test_to2D);
+  // TEST(test_backTo1D);
+  // TEST(test_makeSubPic);
+  // TEST(test_PasteImage);
 
 
   TEST(test_mirror_h_2x2);
-  /*TEST(test_mirror_h_symmetrical);
+  TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
   TEST(test_mirror_h_3x3);
-  TEST(test_mirror_h_4x4);
-  TEST(our_mirror_v_test);
+  //TEST(test_mirror_h_4x4);
+ /* TEST(our_mirror_v_test);
   TEST(test_mirror_v_symmetrical);
   TEST(test_mirror_v_with_single_row);
   TEST(test_mirror_v_4x4);
   TEST(test_mirror_v_3x3);*/
 
   /*TEST( test_mirror_h_basic );
+  TEST( test_mirror_h_basic );
   TEST( test_mirror_v_basic );
   TEST( test_tile_basic );
   TEST( test_grayscale_basic );
@@ -189,6 +220,8 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_v_4x4);
   TEST(test_mirror_v_3x3);
   TEST(test_tile_out_of_bounds_n_fails);*/
+  //TEST(test_tile_out_of_bounds_n_fails);
+  //TEST(test_grayscale_assembly);
   TEST_FINI();
 }
 
@@ -434,9 +467,18 @@ void test_grayscale_single_color(TestObjs *objs) {
     img_init(&output_img, red_img->width, red_img->height);
     imgproc_grayscale(red_img, &output_img);
 
+    uint32_t expected = 0x4E4E4EFF;
+
     // grayscale value of red is 0x4E4E4EFF
     for (int i = 0; i < output_img.width * output_img.height; ++i) {
-        ASSERT(output_img.data[i] == 0x4E4E4EFF);
+        uint32_t actual = output_img.data[i];
+        if (actual != expected) {
+            printf("Mismatch at pixel %d:\n", i);
+            printf("  Expected: 0x%08X\n", expected);
+            printf("  Actual:   0x%08X\n", actual);
+        }
+
+        ASSERT(actual == expected);
     }
 
     destroy_img(red_img);
@@ -531,6 +573,46 @@ void test_composite_completely_opaque(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
+/* Function prototype for to2D (needs to be fixed)
+
+void test_to2D(TestObjs * objs) {
+    int width = 3;
+    int height = 3;
+
+    // Input 1D data for testing
+    uint32_t inputData[] = {
+        1, 2, 3,
+        4, 5, 6,
+        7, 8, 9
+    };
+
+    // Expected 2D data
+    uint32_t expectedData[3][3] = {
+        { 1, 2, 3 },
+        { 4, 5, 6 },
+        { 7, 8, 9 }
+    };
+
+    // Call the function to test
+    uint32_t** outputData = to2D(inputData, width, height);
+
+    // Assert that each element in the output matches the expected data
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            assert(outputData[row][col] == expectedData[row][col]);
+        }
+    }
+
+    // Free allocated memory after the test
+    for (int row = 0; row < height; row++) {
+        free(outputData[row]);
+    }
+    free(outputData);
+
+    // Print a success message if all assertions pass
+    printf("test_to2D passed.\n");
+}
+*/
 
 
 // my tests for mirror horizontal function 
@@ -539,6 +621,8 @@ void test_mirror_h_2x2(TestObjs *objs) {
     Picture pic = {
         TEST_COLORS,
         2, 2,
+       // "rr"
+        //"rr"
         "rg"
         "bc"
     };
@@ -551,6 +635,8 @@ void test_mirror_h_2x2(TestObjs *objs) {
     Picture expected = {
         TEST_COLORS,
         2, 2,
+        //"rr"
+        //"rr"
         "gr"
         "cb"
     };
@@ -636,8 +722,8 @@ void test_mirror_h_3x3(TestObjs *objs) {
 // my tests for mirror vertical function 
 
 
-void test_mirror_v_basic_2(TestObjs *objs) {
 
+void test_mirror_v_basic_2(TestObjs *objs) {
     // 2x2 image
     Picture pic = {
         TEST_COLORS,
@@ -683,7 +769,7 @@ void test_mirror_v_with_single_row(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
-void test_mirror_v_4x4(TestObjs *objs) {
+/*void test_mirror_v_4x4(TestObjs *objs) {
     // 4x4 
     Picture pic = {
         TEST_COLORS,
@@ -714,7 +800,7 @@ void test_mirror_v_4x4(TestObjs *objs) {
     destroy_img(input_img);
     destroy_img(expected_img);
     img_cleanup(&output_img);
-}
+}*/
 
 void test_mirror_v_3x3(TestObjs *objs) {
     // 3x3
@@ -747,7 +833,7 @@ void test_mirror_v_3x3(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
-void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
+/*void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
     // 2x2
     Picture pic = {
         TEST_COLORS,
@@ -766,16 +852,16 @@ void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
 
     destroy_img(input_img);
     img_cleanup(&output_img);
-}
+} */
 
 
-
+/*
 // tests for Jalil helper functions
 
 
 //Function prototype for to2D 
 
-/*void test_to2D(TestObjs * objs) {
+void test_to2D(TestObjs * objs) {
     int width = 3;
     int height = 3;
 
@@ -974,5 +1060,52 @@ void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
     destroy_img(result_img);
 
 }*/
+
+
+
+// simple test for asm func
+void test_grayscale_assembly(TestObjs *objs) {
+    // set up 2x2 img
+    struct Image input_img;
+    input_img.width = 2;
+    input_img.height = 2;
+    input_img.data = (uint32_t*)malloc(4 * sizeof(uint32_t));
+    input_img.data[0] = 0xFF0000FF;  // r
+    input_img.data[1] = 0x00FF00FF;  // g
+    input_img.data[2] = 0x0000FFFF;  // b
+    input_img.data[3] = 0xFFFFFFFF;  // w
+
+    struct Image output_img;
+    img_init(&output_img, input_img.width, input_img.height);
+
+    // call assembly function
+    imgproc_grayscale(&input_img, &output_img);
+
+    // what we should get
+    uint32_t expected[4] = {
+        0x4E4E4EFF, // gr 
+        0x7F7F7FFF, // gg
+        0x303030FF, // gb
+        0xB0B0B0FF  // gc
+    };
+
+    // check if everything matches
+    for (int i = 0; i < 4; ++i) {
+        uint32_t actual = output_img.data[i];
+        if (actual != expected[i]) {
+            printf("Mismatch at pixel %d:\n", i);
+            printf("Expected: 0x%08X\n", expected[i]);
+            printf("Actual:   0x%08X\n", actual);
+        }
+        ASSERT(actual == expected[i]);
+    }
+
+    free(input_img.data);
+    img_cleanup(&output_img);
+}
+
+
+
+
 
 
