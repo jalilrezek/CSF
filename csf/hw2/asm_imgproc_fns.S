@@ -94,14 +94,20 @@ imgproc_grayscale:
 
 	movq $0, %r10 # initialize pixel index to 0 so we can iterate over the pixels
 
+	movq 8(%rdi), %r14 # input_img->data into r14
+	movq 8(%rsi), %r15 # output_img->data into r15
+
 grayscale_loop:
 	movq %r12, %rcx # copy width to rcx (temp register)
 	imulq %r13, %rcx # width, r12 times height, r13 = rcx, total # of pixel 
 	cmpq %r10, %rcx # compare current pixel index (r10) with total # of pixels (rcx)
 	jge grayscale_done # exit loop if r10 is greater than or equal to rcx
 
+	# start of the data array is rdi+8
+	# movl 8(%rdi, %r10, 4), %eax 
+
 	# load 32bit pixel val from 'input_img->data[r10]'
-	movl 8(%rdi, %r10, 4), %eax # start of the data array is rdi+8
+	movl (%r14, %r10, 4), %eax 
 
 	/*
 	movzbl %al, %ebx # move pixel alpha to ebx to preserve it (least significant byte)
@@ -112,12 +118,14 @@ grayscale_loop:
 	movzbl %al, %eax # move pixel red into eax (4th byte)
 	*/
 
+	/*
 	movzbl %al, %edi          # red
     	movzbl %ah, %edx          # green
     	shrq $16, %rax            # shift right for blue
     	movzbl %al, %ecx          # blue
     	shrq $8, %rax             # shift right for alpha
     	movzbl %al, %ebx          # alpha
+	*/
 
 	/*
 	# for grayscale: y = (79 * r + 128 * g + 49 * b) / 256
@@ -130,6 +138,13 @@ grayscale_loop:
 	imull %ecx, %eax # multiply B by 49, store in eax again
 	addl %eax, %edi # current total + (49 * b), store in edi
 	*/
+
+	movzbl %al, %edi           # red
+    	movzbl %ah, %edx           # green
+    	shrq $16, %rax             # shift right for blue
+    	movzbl %al, %ecx           # blue
+    	shrq $8, %rax              # shift right for alpha
+    	movzbl %al, %ebx           # alpha
 
 	movl $79, %eax            
     	imull %edi, %eax          # %eax = 79 * Red
@@ -158,7 +173,10 @@ grayscale_loop:
 	orl %eax, %ebx # combine grayscale w alpha then put into ebx
 
 	# changed from eax to ebx
-	movl %ebx, 8(%rsi, %r10, 4) # store 32bit grayscale pixel in 'output_img->data[r10]'
+	# movl %ebx, 8(%rsi, %r10, 4) 
+
+	# store 32bit grayscale pixel in 'output_img->data[r10]'
+	movl %ebx, (%r15, %r10, 4)
 
 	incq %r10 # increment r10
 	jmp grayscale_loop # jump back to the top of the loop for next pixel
