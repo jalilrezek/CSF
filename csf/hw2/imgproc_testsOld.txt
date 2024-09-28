@@ -142,26 +142,26 @@ int main( int argc, char **argv ) {
   // Make sure you add additional TEST() macro invocations
   // for any additional test functions you add.
 
-  /*TEST( test_mirror_h_basic );
+  TEST( test_mirror_h_basic );
   TEST( test_mirror_v_basic );
   TEST( test_tile_basic );
   TEST( test_grayscale_basic );
-  TEST( test_composite_basic );*/
+  TEST( test_composite_basic );
 
-  /*TEST(test_grayscale_single_color);
+  TEST(test_grayscale_single_color);
   TEST(test_grayscale_multiple_colors);
   //TEST(test_composite_basic_opacity);
   TEST(test_composite_completely_opaque);
   TEST(test_composite_full_transparency);
 
-  //TEST(test_to2D);
-  //TEST(test_backTo1D);
-  //TEST(test_makeSubPic);
-  //TEST(test_PasteImage);*/
+  TEST(test_to2D);
+  TEST(test_backTo1D);
+  TEST(test_makeSubPic);
+  TEST(test_PasteImage);
 
 
-  TEST(test_mirror_h_2x2);
-  /*TEST(test_mirror_h_symmetrical);
+  /*TEST(test_mirror_h_2x2);
+  TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
   TEST(test_mirror_h_3x3);
   TEST(test_mirror_h_4x4);
@@ -171,7 +171,7 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_v_4x4);
   TEST(test_mirror_v_3x3);*/
 
-  /*TEST( test_mirror_h_basic );
+  TEST( test_mirror_h_basic );
   TEST( test_mirror_v_basic );
   TEST( test_tile_basic );
   TEST( test_grayscale_basic );
@@ -180,6 +180,7 @@ int main( int argc, char **argv ) {
   TEST(test_grayscale_multiple_colors);
   TEST(test_composite_completely_opaque);
   TEST(test_composite_full_transparency);
+  TEST(test_to2D);
   TEST(test_mirror_h_2x2);
   TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
@@ -188,7 +189,7 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_v_with_single_row);
   TEST(test_mirror_v_4x4);
   TEST(test_mirror_v_3x3);
-  TEST(test_tile_out_of_bounds_n_fails);*/
+  TEST(test_tile_out_of_bounds_n_fails);
   TEST_FINI();
 }
 
@@ -775,7 +776,7 @@ void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
 
 //Function prototype for to2D 
 
-/*void test_to2D(TestObjs * objs) {
+void test_to2D(TestObjs * objs) {
     int width = 3;
     int height = 3;
 
@@ -819,11 +820,11 @@ void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
 
     // Print a success message if all assertions pass
     printf("test_to2D passed.\n");
-} */
+} 
 
 
 
-/*void test_backTo1D( TestObjs *objs ) {
+void test_backTo1D( TestObjs *objs ) {
 
   struct Image *test_img = (struct Image *) malloc( sizeof( struct Image ) );
   test_img->height = 4;
@@ -862,9 +863,9 @@ void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
   free(oneDim);
 
   
-}*/
+}
 
-/*void test_makeSubPic(TestObjs *objs) {
+void test_makeSubPic(TestObjs *objs) {
 
     int sampleDist = 2; // going to sample, from every 2nd row starting at row 0, every 2nd column, also starting at column 0.
     // i.e. start at top left corner and choose every 2nd for rows and cols. See below to figure it out.
@@ -909,9 +910,9 @@ void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
     destroy_img(orig_img);
     destroy_img(subImg);
 
-}*/
+}
 
-/*void test_PasteImage(TestObjs *objs) {
+void test_PasteImage(TestObjs *objs) {
 
     // fully opaque overlay
     Picture pic = { // the "original" which will be modified. The modified version is tested against a contrived expected result.
@@ -973,6 +974,6 @@ void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
     destroy_img(subImg);
     destroy_img(result_img);
 
-}*/
+}
 
 

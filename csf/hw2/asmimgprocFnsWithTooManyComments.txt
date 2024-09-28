@@ -56,11 +56,8 @@ imgproc_mirror_h:
 		jge .LOuterLoopDone
 
 		.LInnerLoop:
-			cmpl %edi, %r11d /*if inner loop counter r11d >= rdi = width. edi lower 32 bits of rdi
-			0-based indexing. Continue only while strictly less than. Should be good. */
+			cmpl %edi, %r11d /*if inner loop counter r11d >= rdi = width. edi lower 32 bits of rdi*/
 			jge .LInnerLoopDone
-
-			/*INITIAL CALCULATION FOR SOURCE INDEX*/
 
 			movl (%edi), %edx /* rdx gets the width, to be used in the [i][j] = col + (width * row) calculation*/
 			/*BUG FIX: Changed %edi to (%edi) (before it was loading like 400,000 into edx)*/
@@ -69,48 +66,38 @@ imgproc_mirror_h:
 
 			addl %r11d, %edx /* rdx is now (width * row) + col, since r11d has the current col
 			 this should be addl %r11d, %edx to use just the 32-bit versions!
-			 I don't think I need to do any -1 here because curCol starts from 0 already, going left to right.
-			 Up to this point, edx is 0 for the first loop iter - correct (for input image) */
+			 I don't think I need to do any -1 here because curCol starts from 0 already, going left to right. */
 
-			/*INITIAL CALCULATION FOR DEST INDEX*/
+
 
 			/* outer loop counter * width + (width - curCol)*/
-			movl (%esi), %ecx/* rcx will be index of output img. load width (the value) into rcx
-			ecx is 2 after this (first loop iter)
-			This used to be edi. I think it should be esi. */
+			movl (%edi), %ecx/* rcx will be index of output img. load width (the value) into rcx*/
 			subl %r11d, %ecx /*rcx now has (width - curCol) note curCol = inner loop counter. It is a literal value
-			; so no need to dereference r11d
-			after this, rcx is 2. Is that right? */
+			; so no need to dereference r11d*/
 
 			movl %r10d, %r8d /* r8 will have (outer loop counter * width) to add to rcx. Currently has outer loop counter.
 			; A literal value so no need to add.
-			; QUESTION: should this be just the lower 32 bits?
-			After this, rcx is 2. Is that right?*/
+			; QUESTION: should this be just the lower 32 bits?*/
 			imul (%edi), %r8d /* r8 now has (outer loop counter * width). Just used lower 32 bits. Not sure if right.
-			; dereferenced edi (lower 32 of rdi) to get the literal width value.
-			After this, %r8d is 0 - correct, I think. */
+			; dereferenced edi (lower 32 of rdi) to get the literal width value.*/
 			addl %r8d, %ecx /* rcx now has the output img index, (curRow * width + (width - curCol))
 			; where curRow = outer loop counter, curCol = inner loop counter
-			; using just the lower 32 bits. */
+			; using just the lower 32 bits.*/
 			/*for 2x2 image, ecx was 2 at this point*/
-
-			dec %ecx /*needs to be (curRow * width + (width - curCol - 1) because of 0-based indexing
-			it starts at width and goes from right to left, so need the -1 there I think. 
-			used to be r8d, I think should be ecx
-			ecx = 1 after this*/
-
-			/*FINISH CALCULATION FOR SOURCE INDEX*/
+			dec %r8d /*needs to be (curRow * width + (width - curCol - 1) because of 0-based indexing
+			it starts at width and goes from right to left, so need the -1 there I think. */
 
 			imul $4, %edx /* multiply by size of uint32_t*/
 			addl $IMAGE_DATA_OFFSET, %edx /* add image_data_offset to get total offset from rdi to current pixel of input
 			After this, to get to the address of current pixel, just do rdi +edx*/
 			/*GDB: for 2x2 image, edx was 8 at this point*/
 
+			/*leaq (%edx)(%edi), %edx /* edx goes from being the offset, to being (base address of input struct) + offset.
+			 so basically edx becomes the actual mem address of the current source pixel.*/
+
 			/*DEBUGGING QUESTION: What were edi, edx before this leal?
 			$edx was 8
-			$ecx was 1 (i think)
 			*/
-
 			leaq (%rdi, %rdx, 1), %rdx /* edx = edi + (edx * 1) 
 			Purpose: get to addres of current pixel by doing rdi + edx*/
 			/*GDB:  (gdb) x/x $edi
@@ -119,33 +106,26 @@ imgproc_mirror_h:
 					 0x40b048:       0x0040b060
 				    (gdb)   
 			GDB: on first iter, edx is 8 more than edi. Should be right: edi is base of image, edx is first pixel 8 away
-			in GDB, x/x $edx = x/x $rdi + 8 = x/x $edi + 8
-			Plus, dereferencing 0x0040b060 yields the desired 0xff0000ff pixel val*/
+			in GDB, x/x $edx = x/x $rdi + 8 = x/x $edi + 8*/
 
 
-			/*FINISH CALCULATION FOR DEST INDEX*/
+
 			imul $4, %ecx /* multiply by size of uint32_t*/
-			/*GDB: After this, p $ecx = 4
+			/*GDB: After this, p $ecx = 8
 			x/x $ecx fails: It is simply an address, not a value.*/
-			/*HEREmovl IMAGE_DATA_OFFSET(%rsi), %r8d /* access the "data" field of output - this should be a mem address. 
-			r8d should now have a mem address in it*/
+			addl $IMAGE_DATA_OFFSET, %ecx /* add image_data_offset to get total offset from rsi to current pixel of output*/
+			/*After this, p $ecx = 16*/
 
-			/*HEREaddl $r8d, $ecx /*ecx should now have the mem address value, plus the calculated offset.*/
+			/*leaq (%ecx)(%esi), %ecx /* ecx goes from being the offset, to being (base address of output struct) + offset.
+			; so basically after line below, ecx becomes the actual mem address of the current output pixel.*/
 
-
-			/*addl $IMAGE_DATA_OFFSET, %ecx /* add image_data_offset to get total offset from rsi to current pixel of output*/
-			/*After this, p $ecx = 12*/
-
-
-			/*leaq (%rsi, %rcx, 1), %rcx /* ecx = esi + (ecx * 1)  the idea is for rcx to be the actual mem address of 
+			leaq (%rsi, %rcx, 1), %rcx /* ecx = esi + (ecx * 1)  the idea is for rcx to be the actual mem address of 
 			the current output pixel */
-
-			/*END CALCULATION FOR DEST INDEX*/
 
 			/*GDB: After the above line, esi which should just be last 32 bits of rsi, is negative, but rsi is positive.
 
-			CURRENT INPUT PIXEL: rdx ---- goes left to right
-			CURRENT OUTPUT PIXEL: rcx ----- goes right to left
+			CURRENT INPUT PIXEL: rdx
+			CURRENT OUTPUT PIXEL: rcx
 
 			*/
 			movl (%edx), %r9d      /* Step 1: Load the address of pixel data into r9d */

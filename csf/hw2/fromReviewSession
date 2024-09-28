@@ -1,0 +1,6 @@
+Stack poitner alignment:
+
+There's some combination of (maybe pushqs, maybe a subq). And there's the original offset by 8 bytes from calling the function
+itself. The way it works is, you just need to make sure that the stack pointer is aligned to a multiple of 16.
+So since calling the function offsets it by 8, basically you need to make sure the combination of (pushqs & subqs)
+totals up to an odd multipe of 8 to cancel out the offset from calling the function.

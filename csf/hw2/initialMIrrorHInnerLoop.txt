@@ -1,0 +1,58 @@
+		Newer:	
+		cmpl %r12d, %r10d; if the outer loop counter r10d >= r12d = height, jump out.
+		jge .LOuterLoopDone
+
+		.LInnerLoop:
+			cmpl %edi, %r11d; if inner loop counter r11d >= rdi = width. edi lower 32 bits of rdi
+			jge .LInnerLoopDone
+
+			movq %rdi, %rdx; rdx gets the width, to be used in the [i][j] = col + (width * row) calculation
+			mul %r10d, %edx; rdx gets (rdx * r10d) i.e. rdx = width * row. Use just lower 32 bits.
+			addl %r11d, %edx; rdx is now (width * row) + col, since r11d has the current col
+			; this should be addl %r11d, %edx to use just the 32-bit versions!
+
+
+
+			; outer loop counter * width + (width - curCol)
+			movq (%rdi), %rcx; rcx will be index of output img. load width (the value) into rcx
+			subl %r11d, %ecx; rcx now has (width - curCol) note curCol = inner loop counter. It is a literal value
+			; so no need to dereference r11d
+			movq %r10, %r8; r8 will have (outer loop counter * width) to add to rcx. Currently has outer loop counter.
+			; A literal value so no need to add.
+			; QUESTION: should this be just the lower 32 bits?
+			mul (%edi), %r8d; r8 now has (outer loop counter * width). Just used lower 32 bits. Not sure if right.
+			; dereferenced edi (lower 32 of rdi) to get the literal width value.
+			addl %r8d, %ecx; rcx now has the output img index, (curRow * width + (width - curCol))
+			; where curRow = outer loop counter, curCol = inner loop counter
+			; using just the lower 32 bits.
+			;addl IMAGE_DATA_OFFSET, %ecx; gotta offset to access the data part.
+
+			
+			
+
+			movl (IMAGE_DATA_OFFSET(%rdi), %ecx, 4) 	
+			
+			
+		Older:	
+			movq %rdi, %rdx; rdx gets the width, to be used in the [i][j] = col + (width * row) calculation
+			mul %r10d, %rdx; rdx gets (rdx * r10d) i.e. rdx = width * row
+			addq %r11d, %rdx; rdx is now (width * row) + col, since r11d has the current col
+
+			; outer loop counter * width + (width - curCol)
+			movq %rdi, %rcx; rcx will be index of output img. load width into rcx
+			subq %r11d, %rcx; rcx now has (width - curCol) note curCol = inner loop counter
+			movq %r10d, %r8; r8 will have (outer loop counter * width) to add to rcx. Currently has outer loop counter.
+			mul %rdi, %r8; r8 now has (outer loop counter * width)
+			addq %r8, %rcx; rcx now has the complete output img index, (curRow * width + (width - curCol))
+			; where curRow = outer loop counter, curCol = inner loop counter
+
+			movq (%rdx) (%rcx)(%rsi); rdx is input img index, put its value into correct index of output img
+			; (%rcx)(%rsi) is like OFFSET(%rsi) basically just take the address 
+			; fragment of solution: movq IMAGE_DATA_OFFSET(%r12), %dest
+			;                       movl (... 9, 4) % dest -- array arithmetic. was it r9?
+
+
+
+
+
+	
