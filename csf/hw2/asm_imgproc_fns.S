@@ -127,10 +127,10 @@ imgproc_mirror_h:
 			imul $4, %ecx /* multiply by size of uint32_t*/
 			/*GDB: After this, p $ecx = 4
 			x/x $ecx fails: It is simply an address, not a value.*/
-			/*HEREmovl IMAGE_DATA_OFFSET(%rsi), %r8d /* access the "data" field of output - this should be a mem address. 
+			movl IMAGE_DATA_OFFSET(%rsi), %r8d /* access the "data" field of output - this should be a mem address. 
 			r8d should now have a mem address in it*/
 
-			/*HEREaddl $r8d, $ecx /*ecx should now have the mem address value, plus the calculated offset.*/
+			addl $r8d, $ecx /*ecx should now have the mem address value, plus the calculated offset.*/
 
 
 			/*addl $IMAGE_DATA_OFFSET, %ecx /* add image_data_offset to get total offset from rsi to current pixel of output*/
