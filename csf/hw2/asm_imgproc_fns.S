@@ -121,6 +121,7 @@ imgproc_grayscale:
     addq $8, %rsp # restore
     movq %rax, IMAGE_DATA_OFFSET(%r15) # store the memory to output_img->data
 
+    /*
     # Prepare for loop over pixels
     movl IMAGE_WIDTH_OFFSET(%r14), %r10d # %r10d = input_img->width
     movl IMAGE_HEIGHT_OFFSET(%r14), %eax # %eax = input_img->height
@@ -128,6 +129,11 @@ imgproc_grayscale:
     movslq %eax, %rax # %rax = height (64-bit)
     imulq %rax, %r10 # %r10 = total pixels (64-bit)
     xorq %rax, %rax # %rax = i = 0 (loop counter)
+    */
+
+    movq %r12, %r10
+    shrq $2, %r10
+    xorq %rax, %rax
 
     movq IMAGE_DATA_OFFSET(%r14), %rdx # %rdx = input_img->data
     movq IMAGE_DATA_OFFSET(%r15), %rcx # %rcx = output_img->data
@@ -149,14 +155,27 @@ grayscale_loop:
     shrl $8, %r13d # shift to the right by 8 bits
     andl $0xFF, %r13d # %r13d = blue
 
+    /*
     movl %r11d, %r14d # copy to %r14d
     shrl $16, %r14d # shift to the right by 16 bits
     andl $0xFF, %r14d # %r14d = green
+    */
 
+    movl %r11d, %edx                     
+    shrl $16, %edx                        
+    andl $0xFF, %edx                      
+
+    /*
     movl %r11d, %r15d # copy to %r15d
     shrl $24, %r15d # shift to the right by 24 bits
     andl $0xFF, %r15d # %r15d = red
+    */
 
+    movl %r11d, %ecx                     
+    shrl $24, %ecx                        
+    andl $0xFF, %ecx                      
+
+    /*
     # grayscale = (79*red + 128*green + 49*blue) / 256
     movl %r15d, %ebx # %ebx = red
     imull $79, %ebx # %ebx = 79 * red
@@ -167,18 +186,35 @@ grayscale_loop:
     imull $49, %edi # %edi = 49 * blue
     addl %edi, %ebx # %ebx += 49 * blue
     shrl $8, %ebx # %ebx = gray / 256
+    */
+
+    movl %ecx, %ebx # %ebx = red
+    imull $79, %ebx # %ebx = 79 * red
+    movl %edx, %edi # %edi = green
+    imull $128, %edi # %edi = 128 * green
+    addl %edi, %ebx # %ebx += 128 * green
+    movl %r13d, %edi # %edi = blue
+    imull $49, %edi # %edi = 49 * blue
+    addl %edi, %ebx # %ebx += 49 * blue
+    shrl $8, %ebx # %ebx = gray
 
     # create the new pixel with grayscale and alpha values
     movl %ebx, %edi # %edi = gray
     shll $24, %edi # shift gray to r position
 
+    /*
     movl %ebx, %ecx # %ecx = gray
     shll $16, %ecx # shift gray to g position
     orl %ecx, %edi # combine green into %edi
+    */
 
-    movl %ebx, %edx # %edx = gray
-    shll $8, %edx # Shift gray to blue position
-    orl %edx, %edi # combine blue into %edi
+    movl %ebx, %esi                      
+    shll $16, %esi                        
+    orl %esi, %edi                     
+
+    movl %ebx, %ecx # %ecx (previously edx) = gray
+    shll $8, %ecx # Shift gray to blue position (changing edx to exc)
+    orl %ecx, %edi # combine blue into %edi (edx changed to ecx)
 
     orl %r12d, %edi # combine alpha into %edi
 
