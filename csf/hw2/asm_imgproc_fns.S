@@ -436,7 +436,7 @@ imgproc_grayscale:
     andl $0xFF, %ebx                        # Mask to get alpha component
     shll $8, %ebx                           # Shift alpha to lower 8 bits
     orl %esi, %esi                          # Gray value for red, green, blue
-    movl %ebx, %esi                         # Combine gray value and alpha
+    addl %ebx, %esi                         # Combine gray value and alpha
 
     # Compute output pixel address
     movq IMAGE_DATA_OFFSET(%rsi), %r8       # Load pointer to output image data
