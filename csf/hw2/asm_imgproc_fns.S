@@ -469,7 +469,7 @@ imgproc_grayscale:
     movl %r10d, %ecx                        # Load row index into ecx
     imul %ebx, %ecx                         # Multiply row index by image width
     addl %r11d, %ecx                        # Add column index to ecx
-    imul $4, %ecx                           # Multiply by 4 to get byte offset (uint32_t size)
+    imul $6, %ecx                           # Multiply by 4 to get byte offset (uint32_t size)
     addq %r9, %rcx                          # Add base address of data
     movl %esi, (%rcx)                       # Store grayscale pixel into output image
 
