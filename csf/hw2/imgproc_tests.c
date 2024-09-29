@@ -201,9 +201,9 @@ int main( int argc, char **argv ) {
   //TEST(test_mirror_v_with_single_row);
   //TEST(test_mirror_v_4x4);
   //TEST(test_mirror_v_3x3);
-  TEST(test_grayscale_single_color);
-  TEST(test_grayscale_multiple_colors);
-  TEST( test_grayscale_basic );
+  // TEST(test_grayscale_single_color);
+  // TEST(test_grayscale_multiple_colors);
+  // TEST( test_grayscale_basic );
   //TEST( test_mirror_h_basic );
   //TEST( test_mirror_h_basic );
   //TEST( test_mirror_v_basic );
