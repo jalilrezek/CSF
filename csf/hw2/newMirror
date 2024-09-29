@@ -1,0 +1,85 @@
+/*
+ * void imgproc_mirror_h( struct Image *input_img, struct Image *output_img );
+ *
+ * Transform image by mirroring its pixels horizontally.
+ * This transformation always succeeds.
+ *
+ * Parameters:
+ *   %rdi - pointer to original struct Image
+ *   %rsi - pointer to output struct Image
+ */
+	.globl imgproc_mirror_h
+imgproc_mirror_h:
+	/*Prologue: */
+	pushq %rbp /*call + 1 8-byte push = aligned*/
+	movq %rsp, %rbp
+
+	# push callee-saved registers
+	pushq %r12
+	pushq %r13
+	pushq %r14
+	pushq %r15
+
+/*NOTES: Must use 64-bit versions of the registers if I'm only operating on 32 bits of them (?) */
+
+	movq $0, %r10 /*outer loop counter*/
+	movq $0, %r11 /*inner loop counter*/
+
+	/*DATA POINTERS*/
+	movq IMAGE_DATA_OFFSET(%rdi), %r8
+	movq IMAGE_DATA_OFFSET(%rsi), %r9
+
+	.LOuterLoop:
+		cmpq 4(%rdi), %r10 /* cmp height : curRow */ 
+		jge .LOuterLoopDone
+
+
+		.LInnerLoop:
+			cmpl (%rdi), %r11d
+			jge .LInnerLoopDone
+
+			# src idx calc
+			movq (%rdi), %r12 # r12 = width
+			imull %r10d, %r12d # r12 = width * row. 64 or 32 bit?
+			addl %r11d, %r12d # r12 = (width * row) + col
+
+
+			# dest idx calc
+			movq (%rsi), %r13 # r13 = width
+			subl %r11d, %r13d # r13 = width - col
+
+			movl %r10d, %r8d # r8d = row
+			imull (%rdi), %r8d # r8d = row * width
+
+			addl %r8d, %r13d # r13d = (row * width) + (width - col)
+			decl %r13d # r13d = (row * width) + (width - col) - 1
+
+			# input pixel address & value
+			leaq(%r8, %r12, 4), %r14 # %r14 = input data ptr + (idx) * 4 
+
+			movl (%r14), %ecx # %ecx = pixel value
+
+			# output pixel address (no value)
+			leaq (%r9, %r13, 4), %r15 # %r15 is ADDRESS => output data ptr + (idx) * 4
+
+			# input pixel into output address
+			movl %ecx, (%r15) # put data into the actual mem address at r15, not r15 itself
+			
+			# increment column 
+			incl %r11d
+
+		.LInnerLoopDone:
+			incq %r10 /* outer counter++ */
+			movq $0, %r11 /* reset inner counter */
+			jmp .LOuterLoop /*next outer iter*/
+		
+	.LOuterLoopDone:
+    /* epilogue.*/
+	popq %r15
+	popq %r14
+	popq %r13
+	popq %r12
+
+
+	popq %rbp
+	ret
