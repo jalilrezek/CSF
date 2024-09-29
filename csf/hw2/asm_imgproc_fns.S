@@ -448,11 +448,18 @@ imgproc_grayscale:
     # andl $0xFF, %eax                  # Mask alpha from original pixel
     # orl %esi, %eax                          # Combine grayscale with alpha
 
+/*
     # Set the pixel value: grayscale (y) for R, G, B, and set alpha to 0xFF
     shll $16, %esi                          # Shift grayscale to G position
     orl %esi, %esi                          # Merge grayscale to R and G
     shll $8, %esi                           # Shift grayscale to B position
     orl $0x000000FF, %esi                   # Set the alpha value to 0xFF
+*/
+    movl %esi, %edx                        # Copy grayscale value to %edx to preserve original value
+
+    shll $16, %esi                         # Shift grayscale value to red and green position
+    shll $8, %edx                          # Shift original grayscale value to blue position
+    orl %edx, %esi                         # Combine red, green, and blue grayscale values
 
     movl %r10d, %ecx                        # Load row index into ecx
     imul %ebx, %ecx                         # Multiply row index by image width
