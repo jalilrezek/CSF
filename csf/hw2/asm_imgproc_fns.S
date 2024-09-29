@@ -422,62 +422,39 @@ imgproc_grayscale:
     xorq %rax, %rax # %rax = i = 0 (loop counter)
     */
 
-    movq %r12, %r10
-    shrq $2, %r10
-    xorq %rax, %rax
-
     movq IMAGE_DATA_OFFSET(%r14), %rdx # %rdx = input_img->data
     movq IMAGE_DATA_OFFSET(%r15), %rcx # %rcx = output_img->data
+    # movq %r12, %r10
+    # shrq $2, %r10
+    xorq %rax, %rax
+    shrq $2, %r12
+
+    # movq IMAGE_DATA_OFFSET(%r14), %rdx # %rdx = input_img->data
+    # movq IMAGE_DATA_OFFSET(%r15), %rcx # %rcx = output_img->data
 
 # Loop over each pixel
 grayscale_loop:
-    cmpq %r10, %rax # compare i with total pixels
-    jge grayscale_done # if i is greater than or equal to total pixels, exit the loop
+    cmpq %r12, %rax                       # Compare loop counter with total pixels
+    jge grayscale_done                    # If all pixels processed, exit loop
 
-    # get the addresses 
-    leaq (%rdx, %rax, 4), %r8 # %r8 = &input_img->data[i]
-    leaq (%rcx, %rax, 4), %r9 # %r9 = &output_img->data[i]
+    /* Load the current pixel (RGBA) */
+    movl (%rdx, %rax, 4), %r11d           # Load input_img->data[i] into r11d (32-bit pixel)
 
-    movl (%r8), %r11d # %r11d = pixel
-    movl %r11d, %r12d # copy to %r12d
-    andl $0xFF, %r12d # %r12d = alpha
+    /* Extract RGBA components */
+    movl %r11d, %r12d                     # Copy pixel to r12d for alpha
+    andl $0xFF, %r12d                     # Extract alpha (last byte)
 
-    movl %r11d, %r13d # copy to %r13d
-    shrl $8, %r13d # shift to the right by 8 bits
-    andl $0xFF, %r13d # %r13d = blue
+    movl %r11d, %r13d                     # Copy pixel to r13d for blue
+    shrl $8, %r13d                        # Shift right to isolate blue
+    andl $0xFF, %r13d                     # Extract blue
 
-    /*
-    movl %r11d, %r14d # copy to %r14d
-    shrl $16, %r14d # shift to the right by 16 bits
-    andl $0xFF, %r14d # %r14d = green
-    */
+    movl %r11d, %edx                      # Copy pixel for green
+    shrl $16, %edx                        # Shift right to isolate green
+    andl $0xFF, %edx                      # Extract green
 
-    movl %r11d, %edx                     
-    shrl $16, %edx                        
-    andl $0xFF, %edx                      
-
-    /*
-    movl %r11d, %r15d # copy to %r15d
-    shrl $24, %r15d # shift to the right by 24 bits
-    andl $0xFF, %r15d # %r15d = red
-    */
-
-    movl %r11d, %ecx                     
-    shrl $24, %ecx                        
-    andl $0xFF, %ecx                      
-
-    /*
-    # grayscale = (79*red + 128*green + 49*blue) / 256
-    movl %r15d, %ebx # %ebx = red
-    imull $79, %ebx # %ebx = 79 * red
-    movl %r14d, %edi # %edi = green
-    imull $128, %edi # %edi = 128 * green
-    addl %edi, %ebx # %ebx += 128 * green
-    movl %r13d, %edi # %edi = blue
-    imull $49, %edi # %edi = 49 * blue
-    addl %edi, %ebx # %ebx += 49 * blue
-    shrl $8, %ebx # %ebx = gray / 256
-    */
+    movl %r11d, %ecx                      # Copy pixel for red
+    shrl $24, %ecx                        # Shift right to isolate red
+    andl $0xFF, %ecx                      # Extract red
 
     movl %ecx, %ebx # %ebx = red
     imull $79, %ebx # %ebx = 79 * red
