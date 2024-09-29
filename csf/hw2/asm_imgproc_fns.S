@@ -386,6 +386,10 @@ imgproc_grayscale:
     movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d   # Load input image height into r12d
     movl IMAGE_WIDTH_OFFSET(%rdi), %ebx     # Load input image width into ebx
 
+    # added
+    movq IMAGE_DATA_OFFSET(%rsi), %r9       
+    movq IMAGE_DATA_OFFSET(%rdi), %r8
+
     xorl %r10d, %r10d        # Outer loop counter (row index)
     xorl %r11d, %r11d        # Inner loop counter (column index)
 
@@ -431,20 +435,24 @@ imgproc_grayscale:
     addl %ebx, %esi                         # Add blue contribution to the result
     shrl $8, %esi                           # Divide by 256 to get grayscale value (y)
 
+    /*
     # Set output pixel: gray in RGB, alpha unchanged
     movl %eax, %ebx                         # Copy original pixel to ebx (to preserve alpha)
     andl $0xFF, %ebx                        # Mask to get alpha component
     shll $8, %ebx                           # Shift alpha to lower 8 bits
     orl %esi, %esi                          # Gray value for red, green, blue
     addl %ebx, %esi                         # Combine gray value and alpha
+    */
 
-    # Compute output pixel address
-    movq IMAGE_DATA_OFFSET(%rsi), %r8       # Load pointer to output image data
+    # Set output pixel: gray in RGB, alpha unchanged
+    andl $0xFF000000, %eax                  # Mask alpha from original pixel
+    orl %esi, %eax                          # Combine grayscale with alpha
+
     movl %r10d, %ecx                        # Load row index into ecx
     imul %ebx, %ecx                         # Multiply row index by image width
     addl %r11d, %ecx                        # Add column index to ecx
     imul $4, %ecx                           # Multiply by 4 to get byte offset (uint32_t size)
-    addq %r8, %rcx                          # Add base address of data
+    addq %r9, %rcx                          # Add base address of data
     movl %esi, (%rcx)                       # Store grayscale pixel into output image
 
     inc %r11d                               # Increment inner loop counter
