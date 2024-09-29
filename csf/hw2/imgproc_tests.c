@@ -171,7 +171,7 @@ int main( int argc, char **argv ) {
   /*TEST( test_mirror_v_basic );
   TEST( test_tile_basic );
   */
-  TEST( test_grayscale_basic );
+  // TEST( test_grayscale_basic );
   // TEST( test_composite_basic );
 
   /*TEST(test_grayscale_single_color);
@@ -222,7 +222,7 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_v_3x3);
   /*TEST(test_tile_out_of_bounds_n_fails);*/
   //TEST(test_tile_out_of_bounds_n_fails);
-  //TEST(test_grayscale_assembly);
+  TEST(test_grayscale_assembly);
   TEST_FINI();
 }
 
