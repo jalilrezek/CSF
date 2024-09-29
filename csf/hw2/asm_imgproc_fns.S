@@ -461,7 +461,7 @@ imgproc_grayscale:
     shll $8, %ebx                           # Shift grayscale to blue position
     orl  %ebx, %eax                         # Combine blue into %eax
 
-    orl  $0xFF, %eax                        # Set alpha to 0xFF
+    orl  $0x000000FF, %eax                        # Set alpha to 0xFF
 
     # Store grayscale pixel into output image
     movl %eax, (%r15)
