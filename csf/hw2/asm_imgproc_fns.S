@@ -387,6 +387,118 @@ imgproc_grayscale:
     pushq %r13               # Save %r13
     pushq %r14               # Save %r14
     pushq %r15               # Save %r15
+
+    # Load input image dimensions
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d   # %r12d = input image height
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r13d    # %r13d = input image width
+
+    # Load data pointers
+    movq IMAGE_DATA_OFFSET(%rdi), %r8       # %r8 = input image data pointer
+    movq IMAGE_DATA_OFFSET(%rsi), %r9       # %r9 = output image data pointer
+
+    xorl %r10d, %r10d        # %r10d = row index (outer loop counter)
+
+.LOuterLoopGray:
+    cmpl %r12d, %r10d        # Compare row index with height
+    jge .LOuterLoopGrayDone  # Exit loop if all rows are processed
+
+    xorl %r11d, %r11d        # %r11d = column index (inner loop counter)
+
+.LInnerLoopGray:
+    cmpl %r13d, %r11d        # Compare column index with width
+    jge .LInnerLoopGrayDone  # Exit loop if all columns are processed
+
+    # Compute pixel index (row * width + column)
+    movl %r10d, %ebx                        # %ebx = row index
+    imull %r13d, %ebx                       # %ebx = row * width
+    addl %r11d, %ebx                        # %ebx = pixel index
+
+    # Compute input pixel address
+    leaq (%r8, %rbx, 4), %r14               # %r14 = input image data pointer + offset
+
+    # Load pixel value
+    movl (%r14), %ecx                       # %ecx = pixel value
+
+    # Extract color components using %eax, %esi, %edi, %ebp
+    # Extract red component
+    movl %ecx, %eax                         # %eax = pixel value
+    shrl $24, %eax                          # %eax = red component
+    movl %eax, %esi                         # %esi = red component
+
+    # Extract green component
+    movl %ecx, %eax                         # %eax = pixel value
+    shrl $16, %eax                          # Shift right by 16 bits
+    andl $0xFF, %eax                        # Mask to get green component
+    movl %eax, %edi                         # %edi = green component
+
+    # Extract blue component
+    movl %ecx, %eax                         # %eax = pixel value
+    shrl $8, %eax                           # Shift right by 8 bits
+    andl $0xFF, %eax                        # Mask to get blue component
+    movl %eax, %ebp                         # %ebp = blue component
+
+    # Compute grayscale value: y = (79*r + 128*g + 49*b) / 256
+    movl %esi, %eax                         # %eax = red component
+    imull $79, %eax                         # %eax = 79 * red
+    movl %edi, %esi                         # %esi = green component
+    imull $128, %esi                        # %esi = 128 * green
+    addl %esi, %eax                         # %eax += 128 * green
+    movl %ebp, %esi                         # %esi = blue component
+    imull $49, %esi                         # %esi = 49 * blue
+    addl %esi, %eax                         # %eax += 49 * blue
+    shrl $8, %eax                           # %eax = grayscale value
+
+    # Build grayscale pixel
+    movl %eax, %ecx                         # Save grayscale value in %ecx
+
+    shll $24, %eax                          # Shift grayscale to red position
+    movl %ecx, %esi                         # %esi = grayscale value
+    shll $16, %esi                          # Shift grayscale to green position
+    orl  %esi, %eax                         # Combine green into %eax
+
+    movl %ecx, %esi                         # %esi = grayscale value
+    shll $8, %esi                           # Shift grayscale to blue position
+    orl  %esi, %eax                         # Combine blue into %eax
+
+    orl  $0xFF, %eax                        # Set alpha to 0xFF
+
+    # Compute output pixel address
+    leaq (%r9, %rbx, 4), %r15               # %r15 = output image data pointer + offset
+
+    # Store grayscale pixel into output image
+    movl %eax, (%r15)
+
+    # Increment column index
+    incl %r11d
+    jmp .LInnerLoopGray
+
+.LInnerLoopGrayDone:
+    # Increment row index
+    incl %r10d
+    jmp .LOuterLoopGray
+
+.LOuterLoopGrayDone:
+    # Restore callee-saved registers
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
+    popq %rbx
+    addq $16, %rsp
+    popq %rbp
+    ret
+/*
+    # Function prologue
+    pushq %rbp
+    movq %rsp, %rbp
+    subq $16, %rsp           # Reserve stack space for local variables
+
+    # Save callee-saved registers
+    pushq %rbx               # Save %rbx
+    pushq %r12               # Save %r12
+    pushq %r13               # Save %r13
+    pushq %r14               # Save %r14
+    pushq %r15               # Save %r15
     pushq %rbp               # Save %rbp (used as a general-purpose register)
 
     # Load input image dimensions
@@ -491,6 +603,7 @@ imgproc_grayscale:
     addq $16, %rsp
     popq %rbp
     ret
+*/
 /*
     pushq %rbp
     movq %rsp, %rbp
