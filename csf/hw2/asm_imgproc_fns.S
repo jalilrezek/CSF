@@ -458,9 +458,9 @@ imgproc_grayscale:
 
     movl %esi, %eax                        # Copy grayscale value to %eax (preserve it for later use)
 
-    shll $20, %esi                         # Shift grayscale value to red channel position (bits 24-31)
+    shll $16, %esi                         # Shift grayscale value to red channel position (bits 24-31)
     movl %eax, %edx                        # Copy grayscale value to %edx
-    shll $12, %edx                          # Shift grayscale value to green channel position (bits 16-23)
+    shll $8, %edx                          # Shift grayscale value to green channel position (bits 16-23)
 
     orl %edx, %esi                         # Combine red and green channel grayscale values
     orl %eax, %esi                         # Combine blue channel (bits 8-15) grayscale value
@@ -469,7 +469,7 @@ imgproc_grayscale:
     movl %r10d, %ecx                        # Load row index into ecx
     imul %ebx, %ecx                         # Multiply row index by image width
     addl %r11d, %ecx                        # Add column index to ecx
-    imul $8, %ecx                           # Multiply by 4 to get byte offset (uint32_t size)
+    imul $4, %ecx                           # Multiply by 4 to get byte offset (uint32_t size)
     addq %r9, %rcx                          # Add base address of data
     movl %esi, (%rcx)                       # Store grayscale pixel into output image
 
