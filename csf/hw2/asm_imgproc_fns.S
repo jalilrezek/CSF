@@ -34,7 +34,7 @@ imgproc_mirror_h:
 
 	/*NOTES: Must use 32-bit versions of the registers if I'm only operating on 32 bits of them.*/
 	/* TODO: implement */
-	pushq %rbp /* -8 from rsp. Aligned at this point.*/
+	pushq %rbp /* -8 from rsp. Aligned at this point. */
 	movq %rsp, %rbp
 	subq $8, %rsp; /*1 local var: height (r12d). rsp will be shifted down by 8. Was aligned from above. 
 	; so shift down by another 8, so that after adding the local var, it's aligned to mult of 16 again.
