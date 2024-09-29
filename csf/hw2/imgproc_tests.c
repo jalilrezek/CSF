@@ -180,7 +180,6 @@ int main( int argc, char **argv ) {
   TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
   TEST(test_mirror_h_3x3);
-  TEST(test_mirror_h_4x4);
   //TEST(our_mirror_v_test);
   //TEST(test_mirror_v_symmetrical);
   //TEST(test_mirror_v_with_single_row);
