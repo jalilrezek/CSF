@@ -64,7 +64,7 @@ imgproc_mirror_h:
 
 
 	.LOuterLoop:
-		/**/
+		/*EDITED OUT: cmpl -8(%rbp), %r10d*/
 		cmpl 4(%rdi), %r10d /* if the outer loop counter r10d >= r12d = height, jump out.*/
 		jge .LOuterLoopDone
 
