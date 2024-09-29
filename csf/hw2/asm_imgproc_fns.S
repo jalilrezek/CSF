@@ -376,7 +376,7 @@ imgproc_tile:
  */
 	.globl imgproc_grayscale
 imgproc_grayscale:
-    /* TODO: implement 
+/*  
     # prologue
     pushq %rbp # old base ptr
     movq %rsp, %rbp # new base ptr
@@ -500,7 +500,8 @@ grayscale_done:
     popq %rbx
 
     popq %rbp # old base ptr
-    */
+*/
+
     pushq %rbp
     movq %rsp, %rbp
     subq $16, %rsp           # Reserve stack space for local variables
