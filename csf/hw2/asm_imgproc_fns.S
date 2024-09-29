@@ -448,11 +448,22 @@ imgproc_grayscale:
     # andl $0xFF, %eax                  # Mask alpha from original pixel
     # orl %esi, %eax                          # Combine grayscale with alpha
 
+/*
     movl %esi, %edx                        # Copy grayscale value to %edx to preserve original value
 
     shll $16, %esi                         # Shift grayscale value to red and green position
     shll $8, %edx                          # Shift original grayscale value to blue position
     orl %edx, %esi                         # Combine red, green, and blue grayscale values
+*/
+
+    movl %esi, %eax                        # Copy grayscale value to %eax (preserve it for later use)
+
+    shll $16, %esi                         # Shift grayscale value to red channel position (bits 24-31)
+    movl %eax, %edx                        # Copy grayscale value to %edx
+    shll $8, %edx                          # Shift grayscale value to green channel position (bits 16-23)
+
+    orl %edx, %esi                         # Combine red and green channel grayscale values
+    orl %eax, %esi                         # Combine blue channel (bits 8-15) grayscale value
     orl $0x000000FF, %esi                  # Set the alpha value to 0xFF
 
     movl %r10d, %ecx                        # Load row index into ecx
