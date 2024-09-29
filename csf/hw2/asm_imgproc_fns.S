@@ -445,7 +445,7 @@ imgproc_grayscale:
     */
 
     # Set output pixel: gray in RGB, alpha unchanged
-    andl $0xFF000000, %eax                  # Mask alpha from original pixel
+    andl $0xFF, %eax                  # Mask alpha from original pixel
     orl %esi, %eax                          # Combine grayscale with alpha
 
     movl %r10d, %ecx                        # Load row index into ecx
