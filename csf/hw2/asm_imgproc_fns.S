@@ -452,7 +452,7 @@ imgproc_grayscale:
     shll $16, %esi                          # Shift grayscale to G position
     orl %esi, %esi                          # Merge grayscale to R and G
     shll $8, %esi                           # Shift grayscale to B position
-    orl $0xFF000000, %esi                   # Set the alpha value to 0xFF
+    orl $0x000000FF, %esi                   # Set the alpha value to 0xFF
 
     movl %r10d, %ecx                        # Load row index into ecx
     imul %ebx, %ecx                         # Multiply row index by image width
