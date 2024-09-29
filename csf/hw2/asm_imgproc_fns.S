@@ -22,95 +22,91 @@
 /*
  * void imgproc_mirror_h( struct Image *input_img, struct Image *output_img );
  *
- * Transform image by mirroring its pixels horizontally.
- * This transformation always succeeds.
- *
+ * Mirror image horizontally by reversing the columns.
+ * 
  * Parameters:
  *   %rdi - pointer to original struct Image
  *   %rsi - pointer to output struct Image
  */
-	.globl imgproc_mirror_h
+    .globl imgproc_mirror_h
 imgproc_mirror_h:
+    # Prologue
+    pushq %rbp
+    movq %rsp, %rbp
+    subq $16, %rsp # reserve stack space for local vars
 
-/*Prologue: */
-	pushq %rbp /*call + 1 8-byte push = aligned*/
-	movq %rsp, %rbp
-	subq $16, %rsp
+    # Save callee-saved registers
+    pushq %rbx
+    pushq %r12
+    pushq %r13
+    pushq %r14
+    pushq %r15
+    pushq %rsi # Save %rsi (pixel index)
+    pushq %rbp # Save %rbp (temporary storage)
 
-	# push callee-saved registers
-	pushq %r12
-	pushq %r13
-	pushq %r14
-	pushq %r15
+    # Load input image dimensions
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d # %r12d = input image height
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r13d  # %r13d = input image width
 
-/*NOTES: Must use 64-bit versions of the registers if I'm only operating on 32 bits of them (?) */
+    # Load data pointers
+    movq IMAGE_DATA_OFFSET(%rdi), %r8 # %r8 = input image data ptr
+    movq IMAGE_DATA_OFFSET(%rsi), %r9 # %r9 = output image data ptr
 
-	movq $0, %r10 /*outer loop counter*/
-	movq $0, %r11 /*inner loop counter*/
+    xorl %r10d, %r10d # %r10d = row i (outer loop counter)
 
-	/*DATA POINTERS*/
-	/*movq IMAGE_DATA_OFFSET(%rdi), %r8
-	movq IMAGE_DATA_OFFSET(%rsi), %r9*/
+.LOuterLoopMirror:
+    cmpl %r12d, %r10d # compare row index and height
+    jge .LOuterLoopMirrorDone # exit if all rows are processed
 
+    xorl %r11d, %r11d # %r11d = column i (inner loop counter)
 
-	.LOuterLoop:
-		cmpq 4(%rdi), %r10 /* cmp height : curRow */ 
-		jge .LOuterLoopDone
+.LInnerLoopMirror:
+    cmpl %r13d, %r11d # compare column index and width
+    jge .LInnerLoopMirrorDone # exit if all columns are processed
 
+    # Calculate the source pixel index (width * row + col)
+    movl %r10d, %esi # %esi = row index
+    imull %r13d, %esi # %esi = row * width
+    addl %r11d, %esi # %esi = pixel index (row * width + col)
 
-		.LInnerLoop:
-			cmpl (%rdi), %r11d
-			jge .LInnerLoopDone
+    # Calculate the destination pixel index (row * width + (width - col - 1))
+    movl %r13d, %edx # %edx = width
+    subl %r11d, %edx # %edx = width - col
+    decl %edx        # %edx = width - col - 1
+    movl %r10d, %ebx # %ebx = row index
+    imull %r13d, %ebx # %ebx = row * width
+    addl %edx, %ebx # %ebx = destination pixel index
 
-			# src idx calc
-			movl (%edi), %r12d # r12 = width
-			imull %r10d, %r12d # r12 = width * row. 64 or 32 bit?
-			addl %r11d, %r12d # r12 = (width * row) + col
+    # Load the source pixel value
+    leaq (%r8, %rsi, 4), %r14 # %r14 = input image data ptr + source offset
+    movl (%r14), %ecx  # %ecx = source pixel value
 
+    # Calculate the destination pixel address and store the pixel value
+    leaq (%r9, %rbx, 4), %r15 # %r15 = output image data ptr + destination offset
+    movl %ecx, (%r15) # Store source pixel value in output image
 
-			# dest idx calc
-			movl (%rsi), %r13d # r13 = width
-			subl %r11d, %r13d # r13 = width - col
+    # Increment column i
+    incl %r11d
+    jmp .LInnerLoopMirror
 
-			movl %r10d, %r8d # rdx = row
-			imull (%rdi), %r8d # rdx = row * width
+.LInnerLoopMirrorDone:
+    # Increment row i
+    incl %r10d
+    jmp .LOuterLoopMirror
 
-			addl %r8d, %r13d # r13d = (row * width) + (width - col)
-			decl %r13d # r13d = (row * width) + (width - col) - 1
+.LOuterLoopMirrorDone:
+    # Restore callee-saved registers
+    popq %rbp
+    popq %rsi
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
+    popq %rbx
+    addq $16, %rsp
+    popq %rbp
+    ret
 
-
-			# input pixel address & value
-
-			leaq (%r8, %r12, 4), %r14 # %r14 = input data ptr + (idx) * 4 
-			
-
-			movl (%r14), %ecx # %ecx = pixel value
-
-			# output pixel address (no value)
-
-			leaq (%r9, %r13, 4), %r15 # %r15 is ADDRESS => output data ptr + (idx) * 4
-
-			# input pixel into output address
-			movl %ecx, (%r15) # put data into the actual mem address at r15, not r15 itself
-			
-			# increment column 
-			incl %r11d
-
-		.LInnerLoopDone:
-			incq %r10 /* outer counter++ */
-			movq $0, %r11 /* reset inner counter */
-			jmp .LOuterLoop /*next outer iter*/
-		
-	.LOuterLoopDone:
-    /* epilogue.*/
-	popq %r15
-	popq %r14
-	popq %r13
-	popq %r12
-
-	addq $16, %rsp
-	popq %rbp
-	ret
 /*
  * void imgproc_mirror_v( struct Image *input_img, struct Image *output_img );
  *
