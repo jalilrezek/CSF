@@ -376,7 +376,7 @@ imgproc_tile:
  */
 	.globl imgproc_grayscale
 imgproc_grayscale:
-	/* TODO: implement */
+    /* TODO: implement 
     # prologue
     pushq %rbp # old base ptr
     movq %rsp, %rbp # new base ptr
@@ -500,6 +500,91 @@ grayscale_done:
     popq %rbx
 
     popq %rbp # old base ptr
+    */
+    pushq %rbp
+    movq %rsp, %rbp
+    subq $16, %rsp           # Reserve stack space for local variables
+
+    pushq %rbx               # Save callee-saved registers
+    pushq %r12
+
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d   # Load input image height into r12d
+    movl IMAGE_WIDTH_OFFSET(%rdi), %ebx     # Load input image width into ebx
+
+    xorl %r10d, %r10d        # Outer loop counter (row index)
+    xorl %r11d, %r11d        # Inner loop counter (column index)
+
+.LOuterLoop:
+    cmpl %r12d, %r10d        # Compare outer loop counter with height
+    jge .LOuterLoopDone      # Jump if all rows are processed
+
+    movl $0, %r11d           # Reset inner loop counter (column index)
+
+.LInnerLoop:
+    cmpl %ebx, %r11d         # Compare inner loop counter with width
+    jge .LInnerLoopDone      # Jump if all columns are processed
+
+    # Compute input pixel address
+    movq IMAGE_DATA_OFFSET(%rdi), %r8       # Load pointer to input image data
+    movl %r10d, %ecx                        # Load row index into ecx
+    imul %ebx, %ecx                         # Multiply row index by image width
+    addl %r11d, %ecx                        # Add column index to ecx
+    imul $4, %ecx                           # Multiply by 4 to get byte offset (uint32_t size)
+    addq %r8, %rcx                          # Add base address of data
+    movl (%rcx), %eax                       # Load pixel value into eax
+
+    # Extract color components (red, green, blue)
+    movl %eax, %edx                         # Copy pixel value to edx
+    shrq $24, %rdx                          # Shift red component into lower 8 bits
+    movl %edx, %esi                         # Save red component in esi (r = %esi)
+
+    movl %eax, %edx                         # Copy pixel value again to edx
+    shrq $16, %rdx                          # Shift green component into lower 8 bits
+    andl $0xFF, %edx                        # Mask to get only green component
+    movl %edx, %edi                         # Save green component in edi (g = %edi)
+
+    movl %eax, %edx                         # Copy pixel value again to edx
+    shrq $8, %rdx                           # Shift blue component into lower 8 bits
+    andl $0xFF, %edx                        # Mask to get only blue component
+    movl %edx, %ebx                         # Save blue component in ebx (b = %ebx)
+
+    # Compute grayscale value: y = (79 * r + 128 * g + 49 * b) / 256
+    imull $79, %esi                         # Multiply red by 79
+    imull $128, %edi                        # Multiply green by 128
+    imull $49, %ebx                         # Multiply blue by 49
+    addl %edi, %esi                         # Add green contribution to red
+    addl %ebx, %esi                         # Add blue contribution to the result
+    shrl $8, %esi                           # Divide by 256 to get grayscale value (y)
+
+    # Set output pixel: gray in RGB, alpha unchanged
+    movl %eax, %ebx                         # Copy original pixel to ebx (to preserve alpha)
+    andl $0xFF, %ebx                        # Mask to get alpha component
+    shll $8, %ebx                           # Shift alpha to lower 8 bits
+    orl %esi, %esi                          # Gray value for red, green, blue
+    movl %ebx, %esi                         # Combine gray value and alpha
+
+    # Compute output pixel address
+    movq IMAGE_DATA_OFFSET(%rsi), %r8       # Load pointer to output image data
+    movl %r10d, %ecx                        # Load row index into ecx
+    imul %ebx, %ecx                         # Multiply row index by image width
+    addl %r11d, %ecx                        # Add column index to ecx
+    imul $4, %ecx                           # Multiply by 4 to get byte offset (uint32_t size)
+    addq %r8, %rcx                          # Add base address of data
+    movl %esi, (%rcx)                       # Store grayscale pixel into output image
+
+    inc %r11d                               # Increment inner loop counter
+    jmp .LInnerLoop                         # Repeat for next column
+
+.LInnerLoopDone:
+    inc %r10d                               # Increment outer loop counter
+    jmp .LOuterLoop                         # Repeat for next row
+
+.LOuterLoopDone:
+    popq %r12                               # Restore callee-saved registers
+    popq %rbx
+    addq $16, %rsp                          # Restore stack pointer
+    popq %rbp
+    ret
     ret
 
 /*
