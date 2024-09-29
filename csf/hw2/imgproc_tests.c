@@ -129,10 +129,7 @@ void test_mirror_h_2x2(TestObjs *objs);
 void test_mirror_h_symmetrical(TestObjs *objs);
 void test_mirror_h_with_single_column(TestObjs *objs);
 void test_mirror_h_3x3(TestObjs *objs);
-//void test_mirror_h_4x4(TestObjs *objs); // I think when I merged right before submitting, I must have lost the definitions
-//void our_mirror_v_test(TestObjs *objs); // for these or something. Or maybe it was missing in Tayseer's push but that seems
-//void test_mirror_v_symmetrical(TestObjs *objs); // less likely. Idk. All I know is, when I merged the declarations were there,
-void test_mirror_v_with_single_row(TestObjs *objs); // but the actual function bodies were missing, which prevented compilation.
+void test_mirror_v_with_single_row(TestObjs *objs); 
 void test_mirror_h_4x4(TestObjs *objs);
 void our_mirror_v_test(TestObjs *objs);
 void test_mirror_v_symmetrical(TestObjs *objs);
@@ -161,67 +158,34 @@ int main( int argc, char **argv ) {
   // Run tests.
   // Make sure you add additional TEST() macro invocations
   // for any additional test functions you add.
-  //TEST( test_mirror_h_basic );
-  //TEST( test_mirror_v_basic );
+  // TEST( test_mirror_v_basic );
   //TEST( test_tile_basic );
-  //TEST( test_grayscale_basic );
   //TEST( test_composite_basic );
-
-  TEST( test_mirror_h_basic );
-  /*TEST( test_mirror_v_basic );
-  TEST( test_tile_basic );
-  */
-  // TEST( test_grayscale_basic );
-  // TEST( test_composite_basic );
-
-  /*TEST(test_grayscale_single_color);
+  TEST( test_grayscale_basic );
+  TEST(test_grayscale_single_color);
   TEST(test_grayscale_multiple_colors);
+  TEST(test_grayscale_assembly);
   //TEST(test_composite_basic_opacity);
-  TEST(test_composite_completely_opaque);
-  TEST(test_composite_full_transparency);
-
-  //TEST(test_to2D);
-  //TEST(test_backTo1D);
-  //TEST(test_makeSubPic);
-  //TEST(test_PasteImage);*/
+  // TEST(test_composite_completely_opaque);
+  // TEST(test_composite_full_transparency);
+  
   // commenting these out for testing assembly functions
   // TEST(test_to2D);
   // TEST(test_backTo1D);
   // TEST(test_makeSubPic);
   // TEST(test_PasteImage);
 
-
+  TEST( test_mirror_h_basic );
   TEST(test_mirror_h_2x2);
   TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
   TEST(test_mirror_h_3x3);
-  //TEST(test_mirror_h_4x4);
+  TEST(test_mirror_h_4x4);
   //TEST(our_mirror_v_test);
   //TEST(test_mirror_v_symmetrical);
   //TEST(test_mirror_v_with_single_row);
   //TEST(test_mirror_v_4x4);
   //TEST(test_mirror_v_3x3);
-  TEST(test_grayscale_single_color);
-  TEST(test_grayscale_multiple_colors);
-  TEST( test_grayscale_basic );
-  //TEST( test_mirror_h_basic );
-  //TEST( test_mirror_h_basic );
-  //TEST( test_mirror_v_basic );
-  /*TEST( test_tile_basic );
-  TEST( test_grayscale_basic );
-  TEST( test_composite_basic );
-  TEST(test_grayscale_single_color);
-  TEST(test_grayscale_multiple_colors);
-  TEST(test_composite_completely_opaque);
-  TEST(test_composite_full_transparency);
-  TEST(test_mirror_h_2x2);
-  TEST(test_mirror_h_symmetrical);
-  TEST(test_mirror_h_with_single_column);
-  TEST(test_mirror_h_3x3);*/
-  TEST(test_mirror_v_basic_2);
-  TEST(test_mirror_v_with_single_row);
-  //TEST(test_mirror_v_4x4);
-  TEST(test_mirror_v_3x3);
   /*TEST(test_tile_out_of_bounds_n_fails);*/
   //TEST(test_tile_out_of_bounds_n_fails);
   TEST(test_grayscale_assembly);
@@ -576,47 +540,6 @@ void test_composite_completely_opaque(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
-/* Function prototype for to2D (needs to be fixed)
-
-void test_to2D(TestObjs * objs) {
-    int width = 3;
-    int height = 3;
-
-    // Input 1D data for testing
-    uint32_t inputData[] = {
-        1, 2, 3,
-        4, 5, 6,
-        7, 8, 9
-    };
-
-    // Expected 2D data
-    uint32_t expectedData[3][3] = {
-        { 1, 2, 3 },
-        { 4, 5, 6 },
-        { 7, 8, 9 }
-    };
-
-    // Call the function to test
-    uint32_t** outputData = to2D(inputData, width, height);
-
-    // Assert that each element in the output matches the expected data
-    for (int row = 0; row < height; row++) {
-        for (int col = 0; col < width; col++) {
-            assert(outputData[row][col] == expectedData[row][col]);
-        }
-    }
-
-    // Free allocated memory after the test
-    for (int row = 0; row < height; row++) {
-        free(outputData[row]);
-    }
-    free(outputData);
-
-    // Print a success message if all assertions pass
-    printf("test_to2D passed.\n");
-}
-*/
-
 
 // my tests for mirror horizontal function 
 void test_mirror_h_2x2(TestObjs *objs) {
@@ -772,38 +695,7 @@ void test_mirror_v_with_single_row(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
-/*void test_mirror_v_4x4(TestObjs *objs) {
-    // 4x4 
-    Picture pic = {
-        TEST_COLORS,
-        4, 4,
-        "rgbr"
-        "gbrg"
-        "brgb"
-        "rgrb"
-    };
-    struct Image *input_img = picture_to_img(&pic);
-    struct Image output_img;
-    img_init(&output_img, input_img->width, input_img->height);
-    imgproc_mirror_v(input_img, &output_img);
 
-    // expect this
-    Picture expected = {
-        TEST_COLORS,
-        4, 4,
-        "rgrb"
-        "brgb"
-        "gbrg"
-        "rgbr"
-    };
-    struct Image *expected_img = picture_to_img(&expected);
-
-    ASSERT(images_equal(&output_img, expected_img));
-
-    destroy_img(input_img);
-    destroy_img(expected_img);
-    img_cleanup(&output_img);
-}*/
 
 void test_mirror_v_3x3(TestObjs *objs) {
     // 3x3
@@ -857,7 +749,7 @@ void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
     img_cleanup(&output_img);
 } 
 
-/* these dont work atm not sure why maybe different pushes 
+/* commented out for asm testing
 // tests for Jalil helper functions
 
 
