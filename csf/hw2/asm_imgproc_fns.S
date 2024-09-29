@@ -36,7 +36,7 @@ imgproc_mirror_h:
 	/* TODO: implement */
 	pushq %rbp /* -8 from rsp. Aligned at this point.*/
 	movq %rsp, %rbp
-	subq $24, %rsp; /*1 local var: height (r12d). rsp will be shifted down by 8. Was aligned from above. 
+	/*subq $8, %rsp; /*1 local var: height (r12d). rsp will be shifted down by 8. Was aligned from above. 
 	; so shift down by another 8, so that after adding the local var, it's aligned to mult of 16 again.
 	; so right now it's misaligned but this is anticipating the local var push, after which will be aligned.
 	; EDIT: Actually, shift by 16 to leave space at (rbp - 8?) for another local var. */
@@ -49,7 +49,7 @@ imgproc_mirror_h:
 	/*Replace height assignment:*/
 	movl IMAGE_HEIGHT_OFFSET(%rdi), %eax      # Load the height value into eax
 	movl %eax, -8(%rbp)                        # Store the value from eax into the local variable at -8(%rbp)
-	movq %rdi, %r12                           # r12 replaces rdi
+	movq %rdi, %r12                          # r12 replaces rdi
 
 
 	/* DYNAMIC ALLOCATION BEGIN: Calculate the size needed for the output image data */
@@ -170,7 +170,8 @@ imgproc_mirror_h:
 			CURRENT OUTPUT PIXEL: rcx ----- goes right to left
 
 			*/
-			movl (%rdx), %r9d      /* Load the 32-bit pixel data into r9d */
+			movl (%rdx), %r9d      /* Load the 32-bit pixel data into r9d 
+			DEBUGGING: Changed (%rdx) to %rdx */
 			movl %r9d, (%rcx)      /* Store the 32-bit value from r9d into the memory address in rcx */
 
 
@@ -187,7 +188,7 @@ imgproc_mirror_h:
 	.LOuterLoopDone:
     /* epilogue.*/
 	popq %r12  /*pop callee-saved registers (local vars)*/
-	addq $24, %rsp
+	/*addq $8, %rsp*/
 	popq %rbp
 	ret
 
