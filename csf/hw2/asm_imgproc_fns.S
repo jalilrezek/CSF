@@ -389,15 +389,15 @@ imgproc_grayscale:
     xorl %r10d, %r10d        # Outer loop counter (row index)
     xorl %r11d, %r11d        # Inner loop counter (column index)
 
-.LOuterLoop:
+.LOuterLoopGray:
     cmpl %r12d, %r10d        # Compare outer loop counter with height
-    jge .LOuterLoopDone      # Jump if all rows are processed
+    jge .LOuterLoopGrayDone      # Jump if all rows are processed
 
     movl $0, %r11d           # Reset inner loop counter (column index)
 
-.LInnerLoop:
+.LInnerLoopGray:
     cmpl %ebx, %r11d         # Compare inner loop counter with width
-    jge .LInnerLoopDone      # Jump if all columns are processed
+    jge .LInnerLoopGrayDone      # Jump if all columns are processed
 
     # Compute input pixel address
     movq IMAGE_DATA_OFFSET(%rdi), %r8       # Load pointer to input image data
@@ -448,18 +448,17 @@ imgproc_grayscale:
     movl %esi, (%rcx)                       # Store grayscale pixel into output image
 
     inc %r11d                               # Increment inner loop counter
-    jmp .LInnerLoop                         # Repeat for next column
+    jmp .LInnerLoopGray                         # Repeat for next column
 
-.LInnerLoopDone:
+.LInnerLoopGrayDone:
     inc %r10d                               # Increment outer loop counter
-    jmp .LOuterLoop                         # Repeat for next row
+    jmp .LOuterLoop Gray                        # Repeat for next row
 
-.LOuterLoopDone:
+.LOuterLoopGrayDone:
     popq %r12                               # Restore callee-saved registers
     popq %rbx
     addq $16, %rsp                          # Restore stack pointer
     popq %rbp
-    ret
     ret
 
 /*
