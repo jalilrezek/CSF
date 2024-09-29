@@ -1,0 +1,7 @@
+rdi + 8 points to a memory address that cannot be dereferenced.
+
+How did you push on the stack? Did you subq rsp by 4 * (num_pixels)? 
+    How do you actually access them in the loop though? Aren't they just at some offset from rdi/rsi?
+    So how does pushing onto the stack change anything?
+    Do you load each individual pixel into some stack space and then access it?
+    No need for malloc?
