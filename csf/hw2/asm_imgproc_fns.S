@@ -376,7 +376,7 @@ imgproc_tile:
  */
 	.globl imgproc_grayscale
 imgproc_grayscale:
-    # prologue
+    # prologue *MOST RECENT PUSH*
     pushq %rbp
     movq %rsp, %rbp
     subq $16, %rsp # reserve stack space for local vars
