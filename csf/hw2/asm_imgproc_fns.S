@@ -35,14 +35,13 @@ imgproc_mirror_h:
 /*Prologue: */
 	pushq %rbp /*call + 1 8-byte push = aligned*/
 	movq %rsp, %rbp
-	subq $8, %rsp
+	subq $16, %rsp
 
 	# push callee-saved registers
 	pushq %r12
 	pushq %r13
 	pushq %r14
 	pushq %r15
-	pushq %rdx
 
 /*NOTES: Must use 64-bit versions of the registers if I'm only operating on 32 bits of them (?) */
 
@@ -50,8 +49,9 @@ imgproc_mirror_h:
 	movq $0, %r11 /*inner loop counter*/
 
 	/*DATA POINTERS*/
-	movq IMAGE_DATA_OFFSET(%rdi), %rdx # mem address of first pix in input
-	movq IMAGE_DATA_OFFSET(%rsi), %r9 # mem address of first pix in output
+	/*movq IMAGE_DATA_OFFSET(%rdi), %r8
+	movq IMAGE_DATA_OFFSET(%rsi), %r9*/
+
 
 	.LOuterLoop:
 		cmpq 4(%rdi), %r10 /* cmp height : curRow */ 
@@ -63,29 +63,31 @@ imgproc_mirror_h:
 			jge .LInnerLoopDone
 
 			# src idx calc
-			movq (%rdi), %r12 # r12 = width
+			movl (%edi), %r12d # r12 = width
 			imull %r10d, %r12d # r12 = width * row. 64 or 32 bit?
 			addl %r11d, %r12d # r12 = (width * row) + col
-			/*andq $0xFFFFFFFF, %r12  # Keep the lower 32 bits, zero out the upper 32 bits*/
-
 
 
 			# dest idx calc
-			movq (%rsi), %r13 # r13 = width
+			movl (%rsi), %r13d # r13 = width
 			subl %r11d, %r13d # r13 = width - col
 
-			movl %r10d, %r8d # r8d = row
-			imull (%rdi), %r8d # r8d = row * width
+			movl %r10d, %r8d # rdx = row
+			imull (%rdi), %r8d # rdx = row * width
 
 			addl %r8d, %r13d # r13d = (row * width) + (width - col)
 			decl %r13d # r13d = (row * width) + (width - col) - 1
 
+
 			# input pixel address & value
-			leaq (%rdx, %r12, 4), %r14 # %r14 = input data ptr + (idx) * 4 
+
+			leaq (%r8, %r12, 4), %r14 # %r14 = input data ptr + (idx) * 4 
+			
 
 			movl (%r14), %ecx # %ecx = pixel value
 
 			# output pixel address (no value)
+
 			leaq (%r9, %r13, 4), %r15 # %r15 is ADDRESS => output data ptr + (idx) * 4
 
 			# input pixel into output address
@@ -101,16 +103,14 @@ imgproc_mirror_h:
 		
 	.LOuterLoopDone:
     /* epilogue.*/
-	popq %rdx
 	popq %r15
 	popq %r14
 	popq %r13
 	popq %r12
 
-	addq $8, %rsp
+	addq $16, %rsp
 	popq %rbp
 	ret
-
 /*
  * void imgproc_mirror_v( struct Image *input_img, struct Image *output_img );
  *
