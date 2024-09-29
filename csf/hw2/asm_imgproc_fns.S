@@ -452,7 +452,7 @@ imgproc_grayscale:
 
 .LInnerLoopGrayDone:
     inc %r10d                               # Increment outer loop counter
-    jmp .LOuterLoop Gray                        # Repeat for next row
+    jmp .LOuterLoopGray                        # Repeat for next row
 
 .LOuterLoopGrayDone:
     popq %r12                               # Restore callee-saved registers
