@@ -383,6 +383,100 @@ imgproc_grayscale:
     pushq %rbx               # Save callee-saved registers
     pushq %r12
 
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d   # Load input image height into %r12d
+    movl IMAGE_WIDTH_OFFSET(%rdi), %ebx     # Load input image width into %ebx
+
+    movq IMAGE_DATA_OFFSET(%rsi), %r9       # Output image data pointer
+    movq IMAGE_DATA_OFFSET(%rdi), %r8       # Input image data pointer
+
+    xorl %r10d, %r10d        # Outer loop counter (row index)
+    # Note: No need to initialize %r11d here; it will be initialized in the inner loop
+
+.LOuterLoopGray:
+    cmpl %r12d, %r10d        # Compare outer loop counter with height
+    jge .LOuterLoopGrayDone  # Jump if all rows are processed
+
+    movl $0, %r11d           # Reset inner loop counter (column index)
+
+.LInnerLoopGray:
+    cmpl %ebx, %r11d         # Compare inner loop counter with width
+    jge .LInnerLoopGrayDone  # Jump if all columns are processed
+
+    # Compute input pixel address
+    movl %r10d, %ecx                        # ecx = row index
+    imull %ebx, %ecx                        # ecx = row index * image width
+    addl %r11d, %ecx                        # ecx = ecx + column index
+    leaq (%r8, %rcx, 4), %rcx               # rcx = input image data pointer + offset
+    movl (%rcx), %eax                       # Load pixel value into %eax
+
+    # Extract color components (red, green, blue)
+    movl %eax, %edx                         # Copy pixel value to %edx
+    shrl $24, %edx                          # Shift red component into lower 8 bits
+    movl %edx, %esi                         # Save red component in %esi (r = %esi)
+
+    movl %eax, %edx                         # Copy pixel value again to %edx
+    shrl $16, %edx                          # Shift green component into lower 8 bits
+    andl $0xFF, %edx                        # Mask to get only green component
+    movl %edx, %edi                         # Save green component in %edi (g = %edi)
+
+    movl %eax, %edx                         # Copy pixel value again to %edx
+    shrl $8, %edx                           # Shift blue component into lower 8 bits
+    andl $0xFF, %edx                        # Mask to get only blue component
+    movl %edx, %ebx                         # Save blue component in %ebx (b = %ebx)
+
+    # Compute grayscale value: y = (79 * r + 128 * g + 49 * b) / 256
+    imull $79, %esi                         # Multiply red by 79
+    imull $128, %edi                        # Multiply green by 128
+    addl %edi, %esi                         # Add green contribution to red
+    imull $49, %ebx                         # Multiply blue by 49
+    addl %ebx, %esi                         # Add blue contribution to the result
+    shrl $8, %esi                           # Divide by 256 to get grayscale value (y)
+
+    # Build the grayscale pixel with correct shifts
+    xorl %eax, %eax                         # Clear %eax to zero
+    movl %esi, %eax                         # Move grayscale value to %eax
+
+    shll $24, %eax                          # Shift grayscale to red component position
+
+    movl %esi, %edx                         # Copy grayscale value to %edx
+    shll $16, %edx                          # Shift grayscale to green component position
+    orl  %edx, %eax                         # Combine green component
+
+    movl %esi, %edx                         # Copy grayscale value to %edx
+    shll $8, %edx                           # Shift grayscale to blue component position
+    orl  %edx, %eax                         # Combine blue component
+
+    orl  $0xFF, %eax                        # Set alpha to 0xFF
+
+    # Compute output pixel address
+    movl %r10d, %edx                        # edx = row index
+    imull %ebx, %edx                        # edx = row index * image width
+    addl %r11d, %edx                        # edx = edx + column index
+    leaq (%r9, %rdx, 4), %rdx               # rdx = output image data pointer + offset
+
+    movl %eax, (%rdx)                       # Store grayscale pixel into output image
+
+    inc %r11d                               # Increment inner loop counter
+    jmp .LInnerLoopGray                     # Repeat for next column
+
+.LInnerLoopGrayDone:
+    inc %r10d                               # Increment outer loop counter
+    jmp .LOuterLoopGray                     # Repeat for next row
+
+.LOuterLoopGrayDone:
+    popq %r12                               # Restore callee-saved registers
+    popq %rbx
+    addq $16, %rsp                          # Restore stack pointer
+    popq %rbp
+    ret
+/*
+    pushq %rbp
+    movq %rsp, %rbp
+    subq $16, %rsp           # Reserve stack space for local variables
+
+    pushq %rbx               # Save callee-saved registers
+    pushq %r12
+
     movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d   # Load input image height into r12d
     movl IMAGE_WIDTH_OFFSET(%rdi), %ebx     # Load input image width into ebx
 
@@ -435,26 +529,9 @@ imgproc_grayscale:
     addl %ebx, %esi                         # Add blue contribution to the result
     shrl $8, %esi                           # Divide by 256 to get grayscale value (y)
 
-    /*
-    # Set output pixel: gray in RGB, alpha unchanged
-    movl %eax, %ebx                         # Copy original pixel to ebx (to preserve alpha)
-    andl $0xFF, %ebx                        # Mask to get alpha component
-    shll $8, %ebx                           # Shift alpha to lower 8 bits
-    orl %esi, %esi                          # Gray value for red, green, blue
-    addl %ebx, %esi                         # Combine gray value and alpha
-    */
-
     # Set output pixel: gray in RGB, alpha unchanged
     # andl $0xFF, %eax                  # Mask alpha from original pixel
     # orl %esi, %eax                          # Combine grayscale with alpha
-
-/*
-    movl %esi, %edx                        # Copy grayscale value to %edx to preserve original value
-
-    shll $16, %esi                         # Shift grayscale value to red and green position
-    shll $8, %edx                          # Shift original grayscale value to blue position
-    orl %edx, %esi                         # Combine red, green, and blue grayscale values
-*/
 
     movl %esi, %eax                        # Copy grayscale value to %eax (preserve it for later use)
 
@@ -469,7 +546,7 @@ imgproc_grayscale:
     movl %r10d, %ecx                        # Load row index into ecx
     imul %ebx, %ecx                         # Multiply row index by image width
     addl %r11d, %ecx                        # Add column index to ecx
-    imul $6, %ecx                           # Multiply by 4 to get byte offset (uint32_t size)
+    imul $4, %ecx                           # Multiply by 4 to get byte offset (uint32_t size)
     addq %r9, %rcx                          # Add base address of data
     movl %esi, (%rcx)                       # Store grayscale pixel into output image
 
@@ -486,6 +563,7 @@ imgproc_grayscale:
     addq $16, %rsp                          # Restore stack pointer
     popq %rbp
     ret
+*/
 
 /*
  * int imgproc_composite( struct Image *base_img, struct Image *overlay_img );
