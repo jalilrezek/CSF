@@ -201,9 +201,9 @@ int main( int argc, char **argv ) {
   //TEST(test_mirror_v_with_single_row);
   //TEST(test_mirror_v_4x4);
   //TEST(test_mirror_v_3x3);
-  // TEST(test_grayscale_single_color);
-  // TEST(test_grayscale_multiple_colors);
-  // TEST( test_grayscale_basic );
+  TEST(test_grayscale_single_color);
+  TEST(test_grayscale_multiple_colors);
+  TEST( test_grayscale_basic );
   //TEST( test_mirror_h_basic );
   //TEST( test_mirror_h_basic );
   //TEST( test_mirror_v_basic );
@@ -836,7 +836,7 @@ void test_mirror_v_3x3(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
-/*void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
+void test_tile_out_of_bounds_n_fails(TestObjs *objs) {
     // 2x2
     Picture pic = {
         TEST_COLORS,
@@ -855,10 +855,9 @@ void test_mirror_v_3x3(TestObjs *objs) {
 
     destroy_img(input_img);
     img_cleanup(&output_img);
-} */
+} 
 
-
-/*
+/* these dont work atm not sure why maybe different pushes 
 // tests for Jalil helper functions
 
 
@@ -908,11 +907,11 @@ void test_to2D(TestObjs * objs) {
 
     // Print a success message if all assertions pass
     printf("test_to2D passed.\n");
-} */
+} 
 
 
 
-/*void test_backTo1D( TestObjs *objs ) {
+void test_backTo1D( TestObjs *objs ) {
 
   struct Image *test_img = (struct Image *) malloc( sizeof( struct Image ) );
   test_img->height = 4;
@@ -951,9 +950,9 @@ void test_to2D(TestObjs * objs) {
   free(oneDim);
 
   
-}*/
+}
 
-/*void test_makeSubPic(TestObjs *objs) {
+void test_makeSubPic(TestObjs *objs) {
 
     int sampleDist = 2; // going to sample, from every 2nd row starting at row 0, every 2nd column, also starting at column 0.
     // i.e. start at top left corner and choose every 2nd for rows and cols. See below to figure it out.
@@ -998,9 +997,9 @@ void test_to2D(TestObjs * objs) {
     destroy_img(orig_img);
     destroy_img(subImg);
 
-}*/
+}
 
-/*void test_PasteImage(TestObjs *objs) {
+void test_PasteImage(TestObjs *objs) {
 
     // fully opaque overlay
     Picture pic = { // the "original" which will be modified. The modified version is tested against a contrived expected result.
@@ -1062,8 +1061,8 @@ void test_to2D(TestObjs * objs) {
     destroy_img(subImg);
     destroy_img(result_img);
 
-}*/
-
+}
+*/
 
 
 // simple test for asm func
@@ -1089,7 +1088,7 @@ void test_grayscale_assembly(TestObjs *objs) {
         0x4E4E4EFF, // gr 
         0x7F7F7FFF, // gg
         0x303030FF, // gb
-        0xB0B0B0FF  // gc
+        0xFFFFFFFF  // gc
     };
 
     // check if everything matches
