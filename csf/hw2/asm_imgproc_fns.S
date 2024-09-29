@@ -382,153 +382,109 @@ imgproc_tile:
  */
 	.globl imgproc_grayscale
 imgproc_grayscale:
-	/* TODO: implement */
-    # prologue
-    pushq %rbp # old base ptr
-    movq %rsp, %rbp # new base ptr
+    # prologue *MOST RECENT PUSH*
+    pushq %rbp
+    movq %rsp, %rbp
+    subq $16, %rsp # reserve stack space for local vars
 
-    # save registers to use
-    pushq %rbx                
+    # save callee-saved registers
+    pushq %rbx               
     pushq %r12               
-    pushq %r13                
-    pushq %r14                
-    pushq %r15
+    pushq %r13               
+    pushq %r14               
+    pushq %r15               
+    pushq %rsi # Save %rsi (pixel index)
+    pushq %rbp # Save %rbp (temporary storage)
 
-    subq $8, %rsp # have to adjust stack before calling malloc
+    movl IMAGE_HEIGHT_OFFSET(%rdi), %r12d # %r12d = input image height
+    movl IMAGE_WIDTH_OFFSET(%rdi), %r13d # %r13d = input image width
 
-    movq %rdi, %r14 # %r14 = input_img ptr
-    movq %rsi, %r15 # %r15 = output_img ptr
+    # data ptrs
+    movq IMAGE_DATA_OFFSET(%rdi), %r8 # %r8 = input image data ptr
+    movq IMAGE_DATA_OFFSET(%rsi), %r9 # %r9 = output image data ptr
 
-    movl IMAGE_WIDTH_OFFSET(%r14), %eax # load input_img->width into %eax
-    movl %eax, IMAGE_WIDTH_OFFSET(%r15) # store %eax to output_img->width
-    movl IMAGE_HEIGHT_OFFSET(%r14), %eax # load input_img->height into %eax
-    movl %eax, IMAGE_HEIGHT_OFFSET(%r15) # store %eax to output_img->height
-    movl IMAGE_WIDTH_OFFSET(%r14), %r12d  # %r12d = input_img->width
-    movl IMAGE_HEIGHT_OFFSET(%r14), %r13d # %r13d = input_img->height
-    movslq %r12d, %r12 # %r12 = width 64bit
-    movslq %r13d, %r13 # %r13 = height 64bit
+    xorl %r10d, %r10d # %r10d = row i (outer loop counter)
 
-    # size = width * height * sizeof(uint32_t)
-    imulq %r13, %r12 # %r12 = width * height
-    shlq $2, %r12 # %r12 = size in bytes * 4
+.LOuterLoopGray:
+    cmpl %r12d, %r10d # compare row index and height
+    jge .LOuterLoopGrayDone # exit if all rows are processed
 
-    # allocate memory
-    movq %r12, %rdi # %rdi = size
-    call malloc # malloc(size)
-    addq $8, %rsp # restore
-    movq %rax, IMAGE_DATA_OFFSET(%r15) # store the memory to output_img->data
+    xorl %r11d, %r11d # %r11d = column i (inner loop counter)
 
-    /*
-    # Prepare for loop over pixels
-    movl IMAGE_WIDTH_OFFSET(%r14), %r10d # %r10d = input_img->width
-    movl IMAGE_HEIGHT_OFFSET(%r14), %eax # %eax = input_img->height
-    movslq %r10d, %r10 # %r10 = width (64-bit)
-    movslq %eax, %rax # %rax = height (64-bit)
-    imulq %rax, %r10 # %r10 = total pixels (64-bit)
-    xorq %rax, %rax # %rax = i = 0 (loop counter)
-    */
+.LInnerLoopGray:
+    cmpl %r13d, %r11d # compare column index and width
+    jge .LInnerLoopGrayDone # exit if all columns are processed
 
-    movq %r12, %r10
-    shrq $2, %r10
-    xorq %rax, %rax
+    # pixel index (row * width + column)
+    movl %r10d, %esi # %esi = row index (using %rsi/%esi)
+    imull %r13d, %esi # %esi = row * width
+    addl %r11d, %esi # %esi = pixel index
 
-    movq IMAGE_DATA_OFFSET(%r14), %rdx # %rdx = input_img->data
-    movq IMAGE_DATA_OFFSET(%r15), %rcx # %rcx = output_img->data
+    # input pixel address
+    leaq (%r8, %rsi, 4), %r14 # %r14 = input image data ptr + offset
 
-# Loop over each pixel
-grayscale_loop:
-    cmpq %r10, %rax # compare i with total pixels
-    jge grayscale_done # if i is greater than or equal to total pixels, exit the loop
+    movl (%r14), %ecx  # %ecx = pixel value
 
-    # get the addresses 
-    leaq (%rdx, %rax, 4), %r8 # %r8 = &input_img->data[i]
-    leaq (%rcx, %rax, 4), %r9 # %r9 = &output_img->data[i]
+    # output pixel address
+    leaq (%r9, %rsi, 4), %r15 # %r15 = output image data pointer + offset
 
-    movl (%r8), %r11d # %r11d = pixel
-    movl %r11d, %r12d # copy to %r12d
-    andl $0xFF, %r12d # %r12d = alpha
+    # registers for temporary storage -> %eax, %edx, %ebx, %edi
+    movl %ecx, %eax # %eax = pixel value
+    shrl $24, %eax # %eax = red 
 
-    movl %r11d, %r13d # copy to %r13d
-    shrl $8, %r13d # shift to the right by 8 bits
-    andl $0xFF, %r13d # %r13d = blue
+    movl %ecx, %edx # %edx = pixel value
+    shrl $16, %edx # shift right 16 bits
+    andl $0xFF, %edx # mask to get green 
 
-    /*
-    movl %r11d, %r14d # copy to %r14d
-    shrl $16, %r14d # shift to the right by 16 bits
-    andl $0xFF, %r14d # %r14d = green
-    */
+    movl %ecx, %ebx # %ebx = pixel value
+    shrl $8, %ebx # shift right 8 bits
+    andl $0xFF, %ebx # mask to get blue 
 
-    movl %r11d, %edx                     
-    shrl $16, %edx                        
-    andl $0xFF, %edx                      
+    # grayscale: y = (79*r + 128*g + 49*b) / 256
+    imull $79, %eax, %eax # %eax = 79 * red
+    imull $128, %edx, %edx # %edx = 128 * green
+    addl %edx, %eax # %eax += 128 * green
+    imull $49, %ebx, %ebx # %ebx = 49 * blue
+    addl %ebx, %eax # %eax += 49 * blue
+    shrl $8, %eax # %eax = grayscale value
 
-    /*
-    movl %r11d, %r15d # copy to %r15d
-    shrl $24, %r15d # shift to the right by 24 bits
-    andl $0xFF, %r15d # %r15d = red
-    */
+    # grayscale pixel
+    movl %eax, %ecx # %ecx = grayscale 
 
-    movl %r11d, %ecx                     
-    shrl $24, %ecx                        
-    andl $0xFF, %ecx                      
+    shll $24, %eax # shift grayscale to red pos
+    movl %ecx, %edx # %edx = grayscale value
+    shll $16, %edx # shift grayscale to green pos
+    orl %edx, %eax # green into %eax
 
-    /*
-    # grayscale = (79*red + 128*green + 49*blue) / 256
-    movl %r15d, %ebx # %ebx = red
-    imull $79, %ebx # %ebx = 79 * red
-    movl %r14d, %edi # %edi = green
-    imull $128, %edi # %edi = 128 * green
-    addl %edi, %ebx # %ebx += 128 * green
-    movl %r13d, %edi # %edi = blue
-    imull $49, %edi # %edi = 49 * blue
-    addl %edi, %ebx # %ebx += 49 * blue
-    shrl $8, %ebx # %ebx = gray / 256
-    */
+    movl %ecx, %ebx # %ebx = grayscale value
+    shll $8, %ebx # shift grayscale to blue pos
+    orl %ebx, %eax # blue into %eax
 
-    movl %ecx, %ebx # %ebx = red
-    imull $79, %ebx # %ebx = 79 * red
-    movl %edx, %edi # %edi = green
-    imull $128, %edi # %edi = 128 * green
-    addl %edi, %ebx # %ebx += 128 * green
-    movl %r13d, %edi # %edi = blue
-    imull $49, %edi # %edi = 49 * blue
-    addl %edi, %ebx # %ebx += 49 * blue
-    shrl $8, %ebx # %ebx = gray
+    orl $0xFF, %eax # alpha to 0xFF or 0x000000FF
 
-    # create the new pixel with grayscale and alpha values
-    movl %ebx, %edi # %edi = gray
-    shll $24, %edi # shift gray to r position
+    # grayscale pixel into output image
+    movl %eax, (%r15)
 
-    /*
-    movl %ebx, %ecx # %ecx = gray
-    shll $16, %ecx # shift gray to g position
-    orl %ecx, %edi # combine green into %edi
-    */
+    # increment column i
+    incl %r11d
+    jmp .LInnerLoopGray
 
-    movl %ebx, %esi                      
-    shll $16, %esi                        
-    orl %esi, %edi                     
+.LInnerLoopGrayDone:
+    # increment row i
+    incl %r10d
+    jmp .LOuterLoopGray
 
-    movl %ebx, %ecx # %ecx (previously edx) = gray
-    shll $8, %ecx # Shift gray to blue position (changing edx to exc)
-    orl %ecx, %edi # combine blue into %edi (edx changed to ecx)
-
-    orl %r12d, %edi # combine alpha into %edi
-
-    movl %edi, (%r9) # output_img->data[i] = new pixel
-
-    incq %rax # increment
-    jmp grayscale_loop # Repeat loop
-
-grayscale_done:
-    # restore the registers
-    popq %r15                
-    popq %r14                
-    popq %r13                
-    popq %r12                
+.LOuterLoopGrayDone:
+    # restore callee-saved registers
+    popq %rbp               
+    popq %rsi               
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
     popq %rbx
-
-    popq %rbp # old base ptr
+    addq $16, %rsp
+    popq %rbp
     ret
 
 /*
