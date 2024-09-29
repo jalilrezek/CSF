@@ -422,6 +422,7 @@ imgproc_grayscale:
     xorq %rax, %rax # %rax = i = 0 (loop counter)
     */
 
+/*
     movq IMAGE_DATA_OFFSET(%r14), %rdx # %rdx = input_img->data
     movq IMAGE_DATA_OFFSET(%r15), %rcx # %rcx = output_img->data
     # movq %r12, %r10
@@ -500,6 +501,7 @@ grayscale_done:
     popq %rbx
 
     popq %rbp # old base ptr
+*/
 */
 
     pushq %rbp
