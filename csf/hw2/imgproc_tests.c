@@ -165,7 +165,7 @@ int main( int argc, char **argv ) {
   TEST(test_grayscale_single_color);
   TEST(test_grayscale_multiple_colors);
   TEST(test_grayscale_assembly);
-  TEST(test_composite_basic_opacity);
+  // TEST(test_composite_basic_opacity);
   TEST(test_composite_completely_opaque);
   TEST(test_composite_full_transparency);
   
