@@ -565,8 +565,8 @@ composite_loop:
     divl %r14d                              # %eax = blended_green
 
     andl $0xFF, %eax
-    shll $8, %eax
-    orl %eax, %ebp                          # %ebp |= blended_green << 8
+    shll $16, %eax
+    orl %eax, %ebp                          # %ebp |= blended_green << 8 (trying 16 rn)
 
     # --- Blend Red Component ---
     # Base Red
@@ -590,8 +590,8 @@ composite_loop:
     divl %r14d                              # %eax = blended_red
 
     andl $0xFF, %eax
-    shll $16, %eax
-    orl %eax, %ebp                          # %ebp |= blended_red << 16
+    shll $24, %eax
+    orl %eax, %ebp                          # %ebp |= blended_red << 16 (trying 24 rn)
 
     # Set alpha to 0xFF
     orl $0xFF000000, %ebp                   # Set alpha to 255
