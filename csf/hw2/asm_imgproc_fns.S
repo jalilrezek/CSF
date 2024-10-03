@@ -418,31 +418,35 @@ imgproc_composite:
     # Function prologue
     pushq %rbp
     movq %rsp, %rbp
-    subq $16, %rsp           # Reserve stack space for local variables
+    subq $16, %rsp                   # Reserve stack space if needed
 
     # Save callee-saved registers
-    pushq %rbx               # Save %rbx (used in pixel computations)
-    pushq %r12               # Save %r12 (used for total_pixels)
-    pushq %r13               # Save %r13 (will hold bottom_img pointer)
-    pushq %r14               # Save %r14 (will hold output_img pointer)
-    pushq %r15               # Save %r15 (will hold top_img pointer)
+    pushq %rbx                       # Save %rbx
+    pushq %r12                       # Save %r12
+    pushq %r13                       # Save %r13
+    pushq %r14                       # Save %r14
+    pushq %r15                       # Save %r15
 
     # Copy function arguments into callee-saved registers
-    movq %rdi, %r13          # %r13 = bottom_img pointer
-    movq %rsi, %r15          # %r15 = top_img pointer
-    movq %rdx, %r14          # %r14 = output_img pointer
+    # Arguments:
+    #   %rdi - bottom_img
+    #   %rsi - top_img
+    #   %rdx - output_img
+    movq %rdi, %r13                  # %r13 = bottom_img pointer
+    movq %rsi, %r14                  # %r14 = top_img pointer
+    movq %rdx, %r15                  # %r15 = output_img pointer
 
     # Load input image dimensions
     movl IMAGE_HEIGHT_OFFSET(%r13), %r12d   # %r12d = bottom_img->height
     movl IMAGE_WIDTH_OFFSET(%r13), %r11d    # %r11d = bottom_img->width
 
     # Store dimensions in output_img
-    movl %r12d, IMAGE_HEIGHT_OFFSET(%r14)   # output_img->height = bottom_img->height
-    movl %r11d, IMAGE_WIDTH_OFFSET(%r14)    # output_img->width = bottom_img->width
+    movl %r12d, IMAGE_HEIGHT_OFFSET(%r15)   # output_img->height = bottom_img->height
+    movl %r11d, IMAGE_WIDTH_OFFSET(%r15)    # output_img->width = bottom_img->width
 
     # Load data pointers
     movq IMAGE_DATA_OFFSET(%r13), %r8       # %r8 = bottom_img->data
-    movq IMAGE_DATA_OFFSET(%r15), %r9       # %r9 = top_img->data
+    movq IMAGE_DATA_OFFSET(%r14), %r9       # %r9 = top_img->data
 
     # Compute total number of pixels: total_pixels = width * height
     imull %r11d, %r12d                      # %r12d = width * height (total_pixels)
@@ -450,15 +454,15 @@ imgproc_composite:
     # Allocate memory for output_img->data
     movl %r12d, %eax                        # %eax = total_pixels
     shll $2, %eax                           # %eax = total_pixels * 4 (bytes per pixel)
-    movq %rax, %rdi                         # %rdi = size in bytes (64-bit), for malloc
+    movl %eax, %edi                         # %edi = size in bytes (for malloc)
     call malloc                             # Allocate memory
-    movq %rax, IMAGE_DATA_OFFSET(%r14)      # output_img->data = allocated memory
+    movq %rax, IMAGE_DATA_OFFSET(%r15)      # output_img->data = allocated memory
 
     # Load output_img->data pointer
     movq %rax, %r10                         # %r10 = output_img->data
 
     # Set up loop counter
-    xorq %rsi, %rsi                         # %rsi = i = 0 (pixel index)
+    xorl %esi, %esi                         # %esi = i = 0 (pixel index)
 
     # Loop over all pixels
 composite_loop:
@@ -516,6 +520,7 @@ composite_loop:
 
     # Add and divide
     addl %ebx, %eax                         # %eax = blended_blue * 255
+    addl $128, %eax                         # For rounding
     shrl $8, %eax                           # Divide by 256
     andl $0xFF, %eax                        # Ensure 8 bits
     # Store blended blue in %ebp
@@ -536,6 +541,7 @@ composite_loop:
 
     # Add and divide
     addl %ebx, %eax                         # %eax = blended_green * 255
+    addl $128, %eax                         # For rounding
     shrl $8, %eax                           # Divide by 256
     andl $0xFF, %eax                        # Ensure 8 bits
     shll $8, %eax                           # Shift to green position
@@ -556,6 +562,7 @@ composite_loop:
 
     # Add and divide
     addl %ebx, %eax                         # %eax = blended_red * 255
+    addl $128, %eax                         # For rounding
     shrl $8, %eax                           # Divide by 256
     andl $0xFF, %eax                        # Ensure 8 bits
     shll $16, %eax                          # Shift to red position
@@ -581,6 +588,9 @@ copy_bottom_pixel:
 
 increment_index:
     incl %esi                               # i++
+    addq $4, %r11                           # Advance bottom_img pointer
+    addq $4, %r12                           # Advance top_img pointer
+    addq $4, %r13                           # Advance output_img pointer
     jmp composite_loop
 
 composite_done:
