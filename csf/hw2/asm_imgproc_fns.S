@@ -486,7 +486,7 @@ imgproc_composite:
     # total_pixels is in %edi
 
 composite_loop:
-    cmpl %edi, %rsid                         # Compare i with total_pixels
+    cmpl %edi, %rsi                           # Compare i with total_pixels
     jge composite_done                        # If i >= total_pixels, exit loop
 
     # Compute addresses of pixels
