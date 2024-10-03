@@ -436,66 +436,62 @@ imgproc_composite:
     movq %rdx, %r15                  # %r15 = output_img pointer
 
     # Load base_img->width and base_img->height
-    movl IMAGE_WIDTH_OFFSET(%r13), %r11d   # %r11d = base_img->width
-    movl IMAGE_HEIGHT_OFFSET(%r13), %r12d  # %r12d = base_img->height
+    movq IMAGE_WIDTH_OFFSET(%r13), %r11   # %r11 = base_img->width (size_t)
+    movq IMAGE_HEIGHT_OFFSET(%r13), %r12  # %r12 = base_img->height (size_t)
 
     # Load overlay_img->width and overlay_img->height
-    movl IMAGE_WIDTH_OFFSET(%r14), %r8d    # %r8d = overlay_img->width
-    movl IMAGE_HEIGHT_OFFSET(%r14), %r9d   # %r9d = overlay_img->height
+    movq IMAGE_WIDTH_OFFSET(%r14), %r8    # %r8 = overlay_img->width (size_t)
+    movq IMAGE_HEIGHT_OFFSET(%r14), %r9   # %r9 = overlay_img->height (size_t)
 
     # Compare widths
-    cmpl %r8d, %r11d    # Compare base_img->width and overlay_img->width
+    cmpq %r8, %r11    # Compare base_img->width and overlay_img->width
     jne dimensions_mismatch
 
     # Compare heights
-    cmpl %r9d, %r12d    # Compare base_img->height and overlay_img->height
+    cmpq %r9, %r12    # Compare base_img->height and overlay_img->height
     jne dimensions_mismatch
 
     # Dimensions match
     # Set output_img->width and output_img->height
-    movl %r11d, IMAGE_WIDTH_OFFSET(%r15)    # output_img->width = base_img->width
-    movl %r12d, IMAGE_HEIGHT_OFFSET(%r15)   # output_img->height = base_img->height
+    movq %r11, IMAGE_WIDTH_OFFSET(%r15)    # output_img->width = base_img->width
+    movq %r12, IMAGE_HEIGHT_OFFSET(%r15)   # output_img->height = base_img->height
 
     # Compute total number of pixels: total_pixels = width * height
-    imull %r12d, %r11d                        # %r11d = width * height (total_pixels)
+    imulq %r12, %r11                        # %r11 = width * height (total_pixels)
 
     # Allocate memory for output_img->data
-    movl %r11d, %eax                         # %eax = total_pixels
-    shll $2, %eax                            # %eax = total_pixels * 4 (bytes per pixel)
-    movl %eax, %edi                          # %edi = size in bytes (for malloc)
-    call malloc                              # Allocate memory
-    movq %rax, IMAGE_DATA_OFFSET(%r15)       # output_img->data = allocated memory
+    movq %r11, %rax                         # %rax = total_pixels
+    shlq $2, %rax                           # %rax = total_pixels * 4 (bytes per pixel)
+    movq %rax, %rdi                         # %rdi = size in bytes (for malloc)
+    call malloc                             # Allocate memory
+    movq %rax, IMAGE_DATA_OFFSET(%r15)      # output_img->data = allocated memory
 
     # Load data pointers
     movq IMAGE_DATA_OFFSET(%r13), %r8       # %r8 = base_img->data
     movq IMAGE_DATA_OFFSET(%r14), %r9       # %r9 = overlay_img->data
-    movq IMAGE_DATA_OFFSET(%r15), %r10      # %r10 = output_img->data
+    movq %rax, %r10                         # %r10 = output_img->data
 
     # Load 255 into %r14d for division
     movl $255, %r14d                        # %r14d = 255 (divisor)
 
     # Set up loop counter
-    xorl %esi, %esi                         # %esi = i = 0 (pixel index)
+    xorq %rsi, %rsi                         # %rsi = i = 0 (pixel index)
 
-    # total_pixels is in %r11d
+    # total_pixels is in %r11
 
 composite_loop:
-    cmpl %r11d, %esi                         # Compare i with total_pixels
-    jge composite_done                       # If i >= total_pixels, exit loop
+    cmpq %r11, %rsi                         # Compare i with total_pixels
+    jge composite_done                      # If i >= total_pixels, exit loop
 
-    # Compute addresses of pixels (4 bytes per pixel)
+    # Compute addresses of pixels
     leaq (%r8,%rsi,4), %rax                 # %rax = &base_img->data[i]
     leaq (%r9,%rsi,4), %rbx                 # %rbx = &overlay_img->data[i]
     leaq (%r10,%rsi,4), %rcx                # %rcx = &output_img->data[i]
 
-    # Load base pixel (Check that %rax points to a valid address)
-    testq %rax, %rax                        # Check if %rax is NULL (just a safety check)
-    je dimensions_mismatch                  # If %rax is NULL, exit
+    # Load base pixel
     movl (%rax), %edx                       # %edx = base_pixel
 
-    # Load overlay pixel (Check that %rbx points to a valid address)
-    testq %rbx, %rbx                        # Check if %rbx is NULL (just a safety check)
-    je dimensions_mismatch                  # If %rbx is NULL, exit
+    # Load overlay pixel
     movl (%rbx), %edi                       # %edi = overlay_pixel
 
     # Extract overlay alpha
@@ -513,77 +509,28 @@ composite_loop:
     movl $255, %r9d                         # %r9d = 255
     subl %r8d, %r9d                         # %r9d = inv_alpha = 255 - o_alpha
 
+    # Extract base RGB components
+    movl %edx, %r12d                        # %r12d = base_pixel
+    shrl $8, %r12d                          # Discard alpha
+
+    # Extract overlay RGB components
+    movl %edi, %r13d                        # %r13d = overlay_pixel
+    shrl $8, %r13d                          # Discard alpha
+
+    # Blend RGB components
     # Initialize blended_color to zero
     xorl %ebp, %ebp                         # %ebp = 0
 
-    # --- Blend Red Component ---
-    # Base Red
-    movl %edx, %eax                         # %eax = base_pixel
-    shrl $24, %eax                          # Shift right to get base_red in bits 7-0
-
-    imull %r9d, %eax                        # base_red * inv_alpha
-
-    # Overlay Red
-    movl %edi, %ebx                         # %ebx = overlay_pixel
-    shrl $24, %ebx                          # Shift right to get overlay_red in bits 7-0
-
-    imull %r8d, %ebx                        # overlay_red * o_alpha
-
-    # Add and divide
-    addl %ebx, %eax                         # %eax = blended_red * 255
-    addl $127, %eax                         # For rounding
-
-    # Prepare for division
-    xorl %edx, %edx                         # Clear %edx before division
-    divl %r14d                              # %eax = blended_red
-
-    andl $0xFF, %eax                        # Keep only lower 8 bits
-    shll $24, %eax                          # Shift left to position red component
-    orl %eax, %ebp                          # Store red component in %ebp
-
-    # --- Blend Green Component ---
-    # Base Green
-    movl %edx, %eax                         # %edx still has base_pixel
-    movl %edx, %eax
-    shrl $16, %eax                          # Shift right to get base_green
-    andl $0xFF, %eax                        # Mask to get base_green
-
-    imull %r9d, %eax                        # base_green * inv_alpha
-
-    # Overlay Green
-    movl %edi, %ebx                         # %ebx = overlay_pixel
-    shrl $16, %ebx                          # Shift right to get overlay_green
-    andl $0xFF, %ebx                        # Mask to get overlay_green
-
-    imull %r8d, %ebx                        # overlay_green * o_alpha
-
-    # Add and divide
-    addl %ebx, %eax                         # %eax = blended_green * 255
-    addl $127, %eax                         # For rounding
-
-    # Prepare for division
-    xorl %edx, %edx                         # Clear %edx before division
-    divl %r14d                              # %eax = blended_green
-
-    andl $0xFF, %eax                        # Keep only lower 8 bits
-    shll $16, %eax                          # Shift left to position green component
-    orl %eax, %ebp                          # Store green component in %ebp
-
     # --- Blend Blue Component ---
     # Base Blue
-    movl %edx, %eax                         # %edx still has base_pixel
-    movl %edx, %eax
-    shrl $8, %eax                           # Shift right to get base_blue
-    andl $0xFF, %eax                        # Mask to get base_blue
-
+    movl %r12d, %eax
+    andl $0xFF, %eax
     imull %r9d, %eax                        # base_blue * inv_alpha
 
     # Overlay Blue
-    movl %edi, %ebx                         # %ebx = overlay_pixel
-    shrl $8, %ebx                           # Shift right to get overlay_blue
-    andl $0xFF, %ebx                        # Mask to get overlay_blue
-
-    imull %r8d, %ebx                        # overlay_blue * o_alpha
+    movl %r13d, %ebx
+    andl $0xFF, %ebx
+    imull %r8d, %ebx                        # o_blue * o_alpha
 
     # Add and divide
     addl %ebx, %eax                         # %eax = blended_blue * 255
@@ -593,32 +540,82 @@ composite_loop:
     xorl %edx, %edx                         # Clear %edx before division
     divl %r14d                              # %eax = blended_blue
 
-    andl $0xFF, %eax                        # Keep only lower 8 bits
-    shll $8, %eax                           # Shift left to position blue component
-    orl %eax, %ebp                          # Store blue component in %ebp
+    andl $0xFF, %eax
+    movl %eax, %ebp                         # %ebp = blended_blue
+
+    # --- Blend Green Component ---
+    # Base Green
+    movl %r12d, %eax
+    shrl $8, %eax
+    andl $0xFF, %eax
+    imull %r9d, %eax                        # base_green * inv_alpha
+
+    # Overlay Green
+    movl %r13d, %ebx
+    shrl $8, %ebx
+    andl $0xFF, %ebx
+    imull %r8d, %ebx                        # o_green * o_alpha
+
+    # Add and divide
+    addl %ebx, %eax                         # %eax = blended_green * 255
+    addl $127, %eax                         # For rounding
+
+    # Prepare for division
+    xorl %edx, %edx                         # Clear %edx before division
+    divl %r14d                              # %eax = blended_green
+
+    andl $0xFF, %eax
+    shll $8, %eax
+    orl %eax, %ebp                          # %ebp |= blended_green << 8
+
+    # --- Blend Red Component ---
+    # Base Red
+    movl %r12d, %eax
+    shrl $16, %eax
+    andl $0xFF, %eax
+    imull %r9d, %eax                        # base_red * inv_alpha
+
+    # Overlay Red
+    movl %r13d, %ebx
+    shrl $16, %ebx
+    andl $0xFF, %ebx
+    imull %r8d, %ebx                        # o_red * o_alpha
+
+    # Add and divide
+    addl %ebx, %eax                         # %eax = blended_red * 255
+    addl $127, %eax                         # For rounding
+
+    # Prepare for division
+    xorl %edx, %edx                         # Clear %edx before division
+    divl %r14d                              # %eax = blended_red
+
+    andl $0xFF, %eax
+    shll $16, %eax
+    orl %eax, %ebp                          # %ebp |= blended_red << 16
 
     # Set alpha to 0xFF
-    orl $0x000000FF, %ebp                   # Set alpha to 255
+    orl $0xFF000000, %ebp                   # Set alpha to 255
 
     # Store blended pixel into output image
     movl %ebp, (%rcx)
 
     # Increment index
-    incl %esi
+    incq %rsi
+
     jmp composite_loop
 
 copy_overlay_pixel:
     # Store overlay pixel into output image
     movl %edi, (%rcx)
     # Increment index
-    incl %esi
+    incq %rsi
     jmp composite_loop
 
 copy_base_pixel:
     # Store base pixel into output image
     movl %edx, (%rcx)
     # Increment index
-    incl %esi
+    incq %rsi
     jmp composite_loop
 
 dimensions_mismatch:
