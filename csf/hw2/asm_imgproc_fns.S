@@ -437,36 +437,36 @@ imgproc_composite:
     movq %rdx, %r15                  # %r15 = output_img pointer
 
     # Load input image dimensions
-    movl IMAGE_HEIGHT_OFFSET(%r13), %r12d   # %r12d = bottom_img->height
-    movl IMAGE_WIDTH_OFFSET(%r13), %r11d    # %r11d = bottom_img->width
+    movq 0(%r13), %r12   # %r12 = bottom_img->height (size_t)
+    movq 0(%r13), %r11   # %r11 = bottom_img->width (size_t)
 
     # Store dimensions in output_img
-    movl %r12d, IMAGE_HEIGHT_OFFSET(%r15)   # output_img->height = bottom_img->height
-    movl %r11d, IMAGE_WIDTH_OFFSET(%r15)    # output_img->width = bottom_img->width
+    movq %r12, 8(%r15)   # output_img->height = bottom_img->height
+    movq %r11, 0(%r15)    # output_img->width = bottom_img->width
 
     # Load data pointers
-    movq IMAGE_DATA_OFFSET(%r13), %r8       # %r8 = bottom_img->data
-    movq IMAGE_DATA_OFFSET(%r14), %r9       # %r9 = top_img->data
+    movq 16(%r13), %r8       # %r8 = bottom_img->data
+    movq 16(%r14), %r9       # %r9 = top_img->data
 
     # Compute total number of pixels: total_pixels = width * height
-    imull %r11d, %r12d                      # %r12d = width * height (total_pixels)
+    imulq %r11, %r12                        # %r12 = width * height (total_pixels)
 
     # Allocate memory for output_img->data
-    movl %r12d, %eax                        # %eax = total_pixels
-    shll $2, %eax                           # %eax = total_pixels * 4 (bytes per pixel)
-    movl %eax, %edi                         # %edi = size in bytes (for malloc)
+    movq %r12, %rax                         # %rax = total_pixels
+    shlq $2, %rax                           # %rax = total_pixels * 4 (bytes per pixel)
+    movq %rax, %rdi                         # %rdi = size in bytes (for malloc)
     call malloc                             # Allocate memory
-    movq %rax, IMAGE_DATA_OFFSET(%r15)      # output_img->data = allocated memory
+    movq %rax, 16(%r15)      # output_img->data = allocated memory
 
     # Load output_img->data pointer
     movq %rax, %r10                         # %r10 = output_img->data
 
     # Set up loop counter
-    xorl %esi, %esi                         # %esi = i = 0 (pixel index)
+    xorq %rsi, %rsi                         # %rsi = i = 0 (pixel index)
 
     # Loop over all pixels
 composite_loop:
-    cmpl %r12d, %esi                        # Compare i with total_pixels
+    cmpq %r12, %rsi                         # Compare i with total_pixels
     jge composite_done                      # If i >= total_pixels, exit loop
 
     # Compute addresses of pixels
@@ -576,10 +576,7 @@ composite_loop:
     movl %ebp, (%r13)
 
     # Increment index
-    incl %esi                               # i++
-
-    # [Removed Pointer Incrementation]
-    # The pointers %r11, %r12, %r13 are recomputed each time, so we don't increment them
+    incq %rsi                               # i++
 
     jmp composite_loop
 
@@ -587,14 +584,14 @@ copy_top_pixel:
     # Store top pixel into output image
     movl %ebx, (%r13)
     # Increment index
-    incl %esi                               # i++
+    incq %rsi                               # i++
     jmp composite_loop
 
 copy_bottom_pixel:
     # Store bottom pixel into output image
     movl %eax, (%r13)
     # Increment index
-    incl %esi                               # i++
+    incq %rsi                               # i++
     jmp composite_loop
 
 composite_done:
@@ -607,7 +604,6 @@ composite_done:
     addq $16, %rsp          # Adjust stack pointer
     popq %rbp               # Restore base pointer
     ret                     # Return from function
-
 /*
 vim:ft=gas:
 */
