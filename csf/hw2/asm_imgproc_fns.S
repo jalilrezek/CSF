@@ -546,13 +546,13 @@ composite_loop:
     # --- Blend Green Component ---
     # Base Green
     movl %r12d, %eax
-    shrl $8, %eax
+    shrl $16, %eax
     andl $0xFF, %eax
     imull %r9d, %eax                        # base_green * inv_alpha
 
     # Overlay Green
     movl %r13d, %ebx
-    shrl $8, %ebx
+    shrl $16, %ebx # 8 to 16
     andl $0xFF, %ebx
     imull %r8d, %ebx                        # o_green * o_alpha
 
@@ -571,13 +571,13 @@ composite_loop:
     # --- Blend Red Component ---
     # Base Red
     movl %r12d, %eax
-    shrl $16, %eax
+    shrl $24, %eax # also 16 to 24
     andl $0xFF, %eax
     imull %r9d, %eax                        # base_red * inv_alpha
 
     # Overlay Red
     movl %r13d, %ebx
-    shrl $16, %ebx
+    shrl $24, %ebx # change from 16 to 24
     andl $0xFF, %ebx
     imull %r8d, %ebx                        # o_red * o_alpha
 
