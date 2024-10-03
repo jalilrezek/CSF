@@ -160,14 +160,14 @@ int main( int argc, char **argv ) {
   // for any additional test functions you add.
   // TEST( test_mirror_v_basic );
   //TEST( test_tile_basic );
-  //TEST( test_composite_basic );
+  TEST( test_composite_basic );
   TEST( test_grayscale_basic );
   TEST(test_grayscale_single_color);
   TEST(test_grayscale_multiple_colors);
   TEST(test_grayscale_assembly);
-  //TEST(test_composite_basic_opacity);
-  // TEST(test_composite_completely_opaque);
-  // TEST(test_composite_full_transparency);
+  TEST(test_composite_basic_opacity);
+  TEST(test_composite_completely_opaque);
+  TEST(test_composite_full_transparency);
   
   // commenting these out for testing assembly functions
   // TEST(test_to2D);
