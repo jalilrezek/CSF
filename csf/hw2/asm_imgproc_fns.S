@@ -571,14 +571,14 @@ composite_loop:
     # --- Blend Red Component ---
     # Base Red
     movl %r12d, %eax
-    shrl $8, %eax
-    andl $0xFF, %eax
+    # shrl $8, %eax
+    andl $0xFF0000, %eax
     imull %r9d, %eax                        # base_red * inv_alpha
 
     # Overlay Red
     movl %r13d, %ebx
-    shrl $8, %ebx
-    andl $0xFF, %ebx
+    # shrl $8, %ebx
+    andl $0xFF0000, %ebx
     imull %r8d, %ebx                        # o_red * o_alpha
 
     # Add and divide
@@ -589,7 +589,7 @@ composite_loop:
     xorl %edx, %edx                         # Clear %edx before division
     divl %r14d                              # %eax = blended_red
 
-    andl $0xFF, %eax
+    andl $0xFF0000, %eax
     shll $16, %eax
     orl %eax, %ebp                          # %ebp |= blended_red << 16
 
@@ -601,7 +601,6 @@ composite_loop:
 
     # Increment index
     incq %rsi
-
     jmp composite_loop
 
 copy_overlay_pixel:
