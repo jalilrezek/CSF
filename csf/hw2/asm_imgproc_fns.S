@@ -594,7 +594,7 @@ composite_loop:
     orl %eax, %ebp                          # %ebp |= blended_red << 16
 
     # Set alpha to 0xFF
-    orl $0xFF000000, %ebp                   # Set alpha to 255
+    orl $0x000000FF, %ebp                   # Set alpha to 255
 
     # Store blended pixel into output image
     movl %ebp, (%rcx)
