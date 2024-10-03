@@ -146,6 +146,8 @@ void test_mirror_v_3x3(TestObjs *objs);
 void test_tile_2x2(TestObjs *objs);
 void test_tile_3x3(TestObjs *objs);
 void test_tile_out_of_bounds_n_fails(TestObjs *objs);
+void test_composite_asm(TestObjs *objs);
+
 
 int main( int argc, char **argv ) {
   // allow the specific test to execute to be specified as the
@@ -188,6 +190,7 @@ int main( int argc, char **argv ) {
   /*TEST(test_tile_out_of_bounds_n_fails);*/
   //TEST(test_tile_out_of_bounds_n_fails);
   TEST(test_grayscale_assembly);
+  TEST(test_composite_asm);
   TEST_FINI();
 }
 
@@ -997,6 +1000,87 @@ void test_grayscale_assembly(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
+// extern int imgproc_composite(struct Image *base_img, struct Image *overlay_img, struct Image *output_img);
+
+void test_composite_asm(TestObjs *objs) {
+    struct Image base_img;
+    base_img.width = 2;
+    base_img.height = 2;
+    base_img.data = (uint32_t*)malloc(4 * sizeof(uint32_t));
+    if (base_img.data == NULL) {
+        printf("Failed to allocate memory for base_img.\n");
+        ASSERT(false);
+    }
+    base_img.data[0] = 0xFF0000FF;  // Pixel 0: Red (R=255, G=0, B=0, A=255)
+    base_img.data[1] = 0x00FF00FF;  // Pixel 1: Green (R=0, G=255, B=0, A=255)
+    base_img.data[2] = 0x0000FFFF;  // Pixel 2: Blue (R=0, G=0, B=255, A=255)
+    base_img.data[3] = 0xFFFFFFFF;  // Pixel 3: White (R=255, G=255, B=255, A=255)
+    struct Image overlay_img;
+    overlay_img.width = 2;
+    overlay_img.height = 2;
+    overlay_img.data = (uint32_t*)malloc(4 * sizeof(uint32_t));
+    if (overlay_img.data == NULL) {
+        printf("Failed to allocate memory for overlay_img.\n");
+        free(base_img.data);
+        ASSERT(false);
+    }
+    overlay_img.data[0] = 0x00000000;  // Pixel 0: Fully Transparent Black (R=0, G=0, B=0, A=0)
+    overlay_img.data[1] = 0x00000080;  // Pixel 1: Semi-Transparent Black (R=0, G=0, B=0, A=128)
+    overlay_img.data[2] = 0xFF00FF80;  // Pixel 2: Semi-Transparent Magenta (R=255, G=0, B=255, A=128)
+    overlay_img.data[3] = 0x000000FF;  // Pixel 3: Fully Opaque Black (R=0, G=0, B=0, A=255)
+
+    uint32_t expected_output[4] = {
+        0xFF0000FF,  // Pixel 0: Red
+        0x007F00FF,  // Pixel 1: Blended (R=0, G=127, B=0, A=255)
+        0x8000FFFF,  // Pixel 2: Blended (R=128, G=0, B=255, A=255)
+        0x000000FF   // Pixel 3: Black
+    };
+    struct Image output_img;
+    if (img_init(&output_img, base_img.width, base_img.height) != IMG_SUCCESS) {
+        printf("can't initialize output_img.\n");
+        free(base_img.data);
+        free(overlay_img.data);
+        ASSERT(false);
+    }
+  
+    int result = imgproc_composite(&base_img, &overlay_img, &output_img);
+
+    if (result != 1) {
+        printf("images have mismatched dimensions.\n");
+        free(base_img.data);
+        free(overlay_img.data);
+        img_cleanup(&output_img);
+        ASSERT(false);
+    }
+
+    int discrepancies = 0;
+    printf("Comparing to expected pixels:\n");
+    for (int i = 0; i < 4; i++) {
+        uint32_t actual = output_img.data[i];
+        uint32_t expected = expected_output[i];
+        if (actual != expected) {
+            printf("Pixel %d mismatch:\n", i);
+            printf("  Expected: 0x%08X\n", expected);
+            printf("  Actual:   0x%08X\n", actual);
+            discrepancies++;
+        } else {
+            printf("Pixel %d matches: 0x%08X\n", i, actual);
+        }
+        ASSERT(actual == expected);
+    }
+
+    if (discrepancies == 0) {
+        printf("All pixels match expected values.\n");
+    } else {
+        printf("Total discrepancies: %d\n", discrepancies);
+    }
+  
+    free(base_img.data);
+    free(overlay_img.data);
+    img_cleanup(&output_img);
+
+    printf("test_composite_assembly completed.\n\n");
+}
 
 
 
