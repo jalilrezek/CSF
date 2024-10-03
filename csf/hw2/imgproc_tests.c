@@ -1000,7 +1000,7 @@ void test_grayscale_assembly(TestObjs *objs) {
     img_cleanup(&output_img);
 }
 
-// extern int imgproc_composite(struct Image *base_img, struct Image *overlay_img, struct Image *output_img);
+extern int imgproc_composite(struct Image *base_img, struct Image *overlay_img, struct Image *output_img);
 
 void test_composite_asm(TestObjs *objs) {
     struct Image base_img;
