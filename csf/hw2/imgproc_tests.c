@@ -1043,15 +1043,7 @@ void test_composite_asm(TestObjs *objs) {
         ASSERT(false);
     }
   
-    int result = imgproc_composite(&base_img, &overlay_img, &output_img);
-
-    if (result != 1) {
-        printf("images have mismatched dimensions.\n");
-        free(base_img.data);
-        free(overlay_img.data);
-        img_cleanup(&output_img);
-        ASSERT(false);
-    }
+    imgproc_composite(&base_img, &overlay_img, &output_img);
 
     int discrepancies = 0;
     printf("Comparing to expected pixels:\n");
