@@ -575,22 +575,26 @@ composite_loop:
     # Store blended pixel into output image
     movl %ebp, (%r13)
 
-    jmp increment_index
+    # Increment index
+    incl %esi                               # i++
+
+    # [Removed Pointer Incrementation]
+    # The pointers %r11, %r12, %r13 are recomputed each time, so we don't increment them
+
+    jmp composite_loop
 
 copy_top_pixel:
     # Store top pixel into output image
     movl %ebx, (%r13)
-    jmp increment_index
+    # Increment index
+    incl %esi                               # i++
+    jmp composite_loop
 
 copy_bottom_pixel:
     # Store bottom pixel into output image
     movl %eax, (%r13)
-
-increment_index:
+    # Increment index
     incl %esi                               # i++
-    addq $4, %r11                           # Advance bottom_img pointer
-    addq $4, %r12                           # Advance top_img pointer
-    addq $4, %r13                           # Advance output_img pointer
     jmp composite_loop
 
 composite_done:
