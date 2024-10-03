@@ -511,11 +511,11 @@ composite_loop:
 
     # Extract base RGB components
     movl %edx, %r12d                        # %r12d = base_pixel
-    shrl $8, %r12d                          # Discard alpha
+    shrl $16, %r12d                          # Discard alpha
 
     # Extract overlay RGB components
     movl %edi, %r13d                        # %r13d = overlay_pixel
-    shrl $8, %r13d                          # Discard alpha
+    shrl $16, %r13d                          # Discard alpha
 
     # Blend RGB components
     # Initialize blended_color to zero
@@ -546,13 +546,13 @@ composite_loop:
     # --- Blend Green Component ---
     # Base Green
     movl %r12d, %eax
-    shrl $4, %eax
+    shrl $8, %eax
     andl $0xFF, %eax
     imull %r9d, %eax                        # base_green * inv_alpha
 
     # Overlay Green
     movl %r13d, %ebx
-    shrl $4, %ebx
+    shrl $8, %ebx
     andl $0xFF, %ebx
     imull %r8d, %ebx                        # o_green * o_alpha
 
@@ -565,19 +565,19 @@ composite_loop:
     divl %r14d                              # %eax = blended_green
 
     andl $0xFF, %eax
-    shll $4, %eax
+    shll $8, %eax
     orl %eax, %ebp                          # %ebp |= blended_green << 8
 
     # --- Blend Red Component ---
     # Base Red
     movl %r12d, %eax
-    shrl $4, %eax
+    shrl $8, %eax
     andl $0xFF, %eax
     imull %r9d, %eax                        # base_red * inv_alpha
 
     # Overlay Red
     movl %r13d, %ebx
-    shrl $4, %ebx
+    shrl $8, %ebx
     andl $0xFF, %ebx
     imull %r8d, %ebx                        # o_red * o_alpha
 
@@ -590,7 +590,7 @@ composite_loop:
     divl %r14d                              # %eax = blended_red
 
     andl $0xFF, %eax
-    shll $8, %eax
+    shll $16, %eax
     orl %eax, %ebp                          # %ebp |= blended_red << 16
 
     # Set alpha to 0xFF
