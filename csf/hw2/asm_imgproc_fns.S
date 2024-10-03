@@ -469,7 +469,7 @@ imgproc_composite:
     # Load data pointers
     movq IMAGE_DATA_OFFSET(%r13), %r8       # %r8 = base_img->data
     movq IMAGE_DATA_OFFSET(%r14), %r9       # %r9 = overlay_img->data
-    movq %rax, %r10                         # %r10 = output_img->data
+    movq IMAGE_DATA_OFFSET(%r15), %r10      # %r10 = output_img->data
 
     # Load 255 into %r14d for division
     movl $255, %r14d                        # %r14d = 255 (divisor)
@@ -483,15 +483,19 @@ composite_loop:
     cmpl %r11d, %esi                         # Compare i with total_pixels
     jge composite_done                       # If i >= total_pixels, exit loop
 
-    # Compute addresses of pixels
+    # Compute addresses of pixels (4 bytes per pixel)
     leaq (%r8,%rsi,4), %rax                 # %rax = &base_img->data[i]
     leaq (%r9,%rsi,4), %rbx                 # %rbx = &overlay_img->data[i]
     leaq (%r10,%rsi,4), %rcx                # %rcx = &output_img->data[i]
 
-    # Load base pixel
+    # Load base pixel (Check that %rax points to a valid address)
+    testq %rax, %rax                        # Check if %rax is NULL (just a safety check)
+    je dimensions_mismatch                  # If %rax is NULL, exit
     movl (%rax), %edx                       # %edx = base_pixel
 
-    # Load overlay pixel
+    # Load overlay pixel (Check that %rbx points to a valid address)
+    testq %rbx, %rbx                        # Check if %rbx is NULL (just a safety check)
+    je dimensions_mismatch                  # If %rbx is NULL, exit
     movl (%rbx), %edi                       # %edi = overlay_pixel
 
     # Extract overlay alpha
