@@ -502,8 +502,8 @@ composite_loop:
     testl %r8d, %r8d                        # Test if o_alpha == 0
     jz copy_base_pixel                      # If zero, copy base pixel
 
-    cmpl $255, %r8d                         # Compare o_alpha with 255
-    je copy_overlay_pixel                   # If 255, copy overlay pixel
+    # cmpl $255, %r8d                         # Compare o_alpha with 255
+    # je copy_overlay_pixel                   # If 255, copy overlay pixel
 
     # Compute inverse alpha
     movl $255, %r9d                         # %r9d = 255
