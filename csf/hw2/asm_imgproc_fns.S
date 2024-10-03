@@ -458,7 +458,7 @@ imgproc_composite:
     movq %rax, %r10                         # %r10 = output_img->data
 
     # Set up loop counter
-    xorl %rsi, %rsi                         # %rsi = i = 0 (pixel index)
+    xorq %rsi, %rsi                         # %rsi = i = 0 (pixel index)
 
     # Loop over all pixels
 composite_loop:
