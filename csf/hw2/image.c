@@ -116,6 +116,7 @@ int img_write(const char *filename, struct Image *img) {
   png_t png;
 
   if (png_open_file_write(&png, filename) != PNG_NO_ERROR) {
+    fprintf( stderr, "Returning IMG_ERR_COULD_NOT_OPEN\n" );
     return IMG_ERR_COULD_NOT_OPEN;
   }
 

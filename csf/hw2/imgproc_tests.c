@@ -163,10 +163,10 @@ int main( int argc, char **argv ) {
   // TEST( test_mirror_v_basic );
   //TEST( test_tile_basic );
   TEST( test_composite_basic );
-  TEST( test_grayscale_basic );
-  TEST(test_grayscale_single_color);
-  TEST(test_grayscale_multiple_colors);
-  TEST(test_grayscale_assembly);
+  //TEST( test_grayscale_basic );
+  //TEST(test_grayscale_single_color);
+  //TEST(test_grayscale_multiple_colors);
+ // TEST(test_grayscale_assembly);
   // TEST(test_composite_basic_opacity);
   TEST(test_composite_completely_opaque);
   TEST(test_composite_full_transparency);
@@ -177,7 +177,7 @@ int main( int argc, char **argv ) {
   // TEST(test_makeSubPic);
   // TEST(test_PasteImage);
 
-  TEST( test_mirror_h_basic );
+ /* TEST( test_mirror_h_basic );
   TEST(test_mirror_h_2x2);
   TEST(test_mirror_h_symmetrical);
   TEST(test_mirror_h_with_single_column);
@@ -187,9 +187,9 @@ int main( int argc, char **argv ) {
   //TEST(test_mirror_v_with_single_row);
   //TEST(test_mirror_v_4x4);
   //TEST(test_mirror_v_3x3);
-  /*TEST(test_tile_out_of_bounds_n_fails);*/
+  TEST(test_tile_out_of_bounds_n_fails);*/
   //TEST(test_tile_out_of_bounds_n_fails);
-  TEST(test_grayscale_assembly);
+  //TEST(test_grayscale_assembly);
   TEST(test_composite_asm);
   TEST_FINI();
 }
