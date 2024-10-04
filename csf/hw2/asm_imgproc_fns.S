@@ -139,33 +139,33 @@ imgproc_mirror_v:
 	/*movl IMAGE_HEIGHT_OFFSET(%rdi), %eax      # Load the height value into eax
 	movl %eax, -8(%rbp)                        # Store the value from eax into the local variable at -8(%rsp)
 	movq %rdi, %r12*/
-	movl IMAGE_HEIGHT_OFFSET(%edi), %r12d; /*r12 will hold the VALUE (not mem address) of the height*/
+	movq IMAGE_HEIGHT_OFFSET(%rdi), %r12; /*r12 will hold the VALUE (not mem address) of the height*/
 
  
 
 	/*REST OF FUNCTION BEGIN*/
-	movl $0, %r10d /*outer loop counter. Use caller saved. No need to reserve more space on stack. "d" for just 32 bits.*/
-	movl $0, %r11d /*inner loop counter. Caller-saved*/
+	movq $0, %r10 /*outer loop counter. Use caller saved. No need to reserve more space on stack. "d" for just 32 bits.*/
+	movq $0, %r11 /*inner loop counter. Caller-saved*/
 	/*at this point, r10d and r11d contain 0 (correct) */
 
 
 	.LOuterLoopV:
-		cmpl %r12d, %r10d /* if the outer loop counter r10d >= r12d = height, jump out.*/
+		cmpq %r12, %r10 /* if the outer loop counter r10d >= r12d = height, jump out.*/
 		jge .LOuterLoopDoneV
 
 		.LInnerLoopV:
 			
-			cmpl (%edi), %r11d			
+			cmpq (%rdi), %r11			
 			jge .LInnerLoopDoneV
 
 			/*INITIAL CALCULATION FOR SOURCE INDEX*/
 
-			movl (%edi), %edx /* rdx gets the width, to be used in the [i][j] = col + (width * row) calculation*/
+			movq (%rdi), %rdx /* rdx gets the width, to be used in the [i][j] = col + (width * row) calculation*/
 			/*BUG FIX: Changed %edi to (%edi) (before it was loading like 400,000 into edx)*/
-			imul %r10d, %edx /* rdx gets (rdx * r10d) i.e. rdx = width * row. Use just lower 32 bits.*/
+			imulq %r10, %rdx /* rdx gets (rdx * r10d) i.e. rdx = width * row. Use just lower 32 bits.*/
 			/*r10d cannot be dereferenced. Multiply the literal value.*/
 
-			addl %r11d, %edx /* rdx is now (width * row) + col, since r11d has the current col
+			addq %r11, %rdx /* rdx is now (width * row) + col, since r11d has the current col
 			 this should be addl %r11d, %edx to use just the 32-bit versions!
 			 I don't think I need to do any -1 here because curCol starts from 0 already, going left to right.
 			 Up to this point, edx is 0 for the first loop iter - correct (for input image) */
@@ -176,47 +176,47 @@ imgproc_mirror_v:
 
 			/* width(height - 1) - (width * row) + col
 			NOTE row = outer loop counter; col = inner loop counter*/
-			movq (%rsi), %rcx/* rcx will be index of output img. load width (the value) into rcx 
+			movq IMAGE_WIDTH_OFFSET(%rsi), %rcx/* rcx will be index of output img. load width (the value) into rcx 
 			rcx = 0x200000002 but ecx = 0x2. Fine?*/ 
 
-			movl %r12d,%r8d /*r8d will get (height - 1)*/
+			movq %r12,%r8 /*r8d will get (height - 1)*/
 			dec %r8d /*r8d has (height - 1)
 			r8d = 1 3rd iter of 2x2. Good I think.*/
 			
-			imul %r8d, %ecx /*ecx now has width * (height - 1)
+			imulq %r8, %rcx /*ecx now has width * (height - 1)
 			p $ecx = 2 3rd iter of 2x2. Good I think.*/
 
-			movl (%edi), %r8d /*r8 has the width
+			movq IMAGE_WIDTH_OFFSET(%rdi), %r8 /*r8 has the width
 			DEBUGGING: Changed %edi to (%edi)*/
-			imul %r10d, %r8d /*r8 now has width * row*/
+			imulq %r10, %r8 /*r8 now has width * row*/
 
-			subl %r8d, %ecx /*ecx now has widh * (height - 1) - (width * row)*/
+			subq %r8, %rcx /*ecx now has widh * (height - 1) - (width * row)*/
 
-			addl %r11d, %ecx /*ecx now has width * (height - 1) - (width * row) + col*/
+			addq %r11, %rcx /*ecx now has width * (height - 1) - (width * row) + col*/
 			/*inc %ecx /*ecx now has width * (height - 1) - (width * row) + col + 1
 			Not sure if the last + 1 is needed...*/
 
 
 			/*BEGINNING OF FINISHING CALCULATION FOR SOURCE INDEX*/
 
-			imul $4, %edx /* multiply by size of uint32_t*/
+			imul $4, %rdx /* multiply by size of uint32_t*/
 
 
-			mov IMAGE_DATA_OFFSET(%rdi), %r8 /*access "data" field of output - a memory address. 
+			movq IMAGE_DATA_OFFSET(%rdi), %r8 /*access "data" field of output - a memory address. 
 			r8d contains the address of the first pixel now. (the address - not the value) */
 
-			addl %r8d, %edx /*to get address of current pixel, add offset factor (edx) to address of first pixel
+			addq %r8, %rdx /*to get address of current pixel, add offset factor (edx) to address of first pixel
 			edx = memory address of current source pixel*/
 
 
 			/*BEGINNING OF FINISHING CALCULATION FOR DEST INDEX*/
-			imul $4, %ecx /* multiply by size of uint32_t*/
+			imulq $4, %rcx /* multiply by size of uint32_t*/
 			/*GDB: After this, p $ecx = 4
 			x/x $ecx fails: It is simply an address, not a value.*/
-			movl IMAGE_DATA_OFFSET(%rsi), %r8d /* access the "data" field of output - this should be a mem address. 
+			movq IMAGE_DATA_OFFSET(%rsi), %r8 /* access the "data" field of output - this should be a mem address. 
 			r8d should now have a mem address in it*/
 
-			addl %r8d, %ecx /*ecx should now have the mem address value, plus the calculated offset.*/
+			addq %r8, %rcx /*ecx should now have the mem address value, plus the calculated offset.*/
 
 
 			/*END OF CALCULATION FOR DEST INDEX*/
