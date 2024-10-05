@@ -10,7 +10,7 @@ Tayseer: Grayscale, composite, test functions for grayscale, composite,
 
 *MS2*
 
-Jalil: mirror_h in assembly, partial mirror_v in assembly (check notes below)
+Jalil: mirror_h in assembly, partial mirror_v in assembly
 Tayseer: Grayscale in assembly (added a test forgot to mention it in MS2 submission)
 
 -----------------------------------------------------------------------------
