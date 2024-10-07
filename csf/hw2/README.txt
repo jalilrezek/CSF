@@ -33,5 +33,5 @@ functions, since leaving them in was blocking compilation of asm_imgproc_tests.
 
 *MS3*
 
-Jalil:
+Jalil: Debugged composite function and got it to pass unit tests and Gradescope tests.
 Tayseer: Composite in assembly (also added another test for composite)

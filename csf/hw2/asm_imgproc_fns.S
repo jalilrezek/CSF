@@ -485,10 +485,8 @@ imgproc_composite:
     movq -32(%rbp), %r11                    # restore original value of r11 = width x height
 
     # Load data pointers
-   /*NOW DONE INSIDE LOOP: movq IMAGE_DATA_OFFSET(%r13), %r8       # %r8 = base_img->data
-    movq IMAGE_DATA_OFFSET(%r14), %r9       # %r9 = overlay_img->data*/
+
     movq %rax, -24(%rbp)
-    /*BEFORE USING -24(%rbp) & NOW DONE INSIDE LOOP: movq %rax, %r10                         # %r10 = output_img->data*/
 
     # Load 255 into %r14d for division
    # EDIT: Do this inside loop. movl $255, %r14d                        # %r14d = 255 (divisor)
